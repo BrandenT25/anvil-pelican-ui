@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+bin/python
+
+# uv
+.uv/
+
+# Environment / secrets
+.env
+.env.*
+
+# OOD / Passenger runtime artifacts
+tmp/
+log/
+*.pid
+
+# OS / editor cruft
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Large/raw data files (keep datasets.json, ignore big binary data)
+data/*.nc
+data/*.root
+data/scratch/

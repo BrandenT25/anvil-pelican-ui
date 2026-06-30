@@ -1,0 +1,17 @@
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from api.routes.dataset import datasetRouter
+from api.routes.pelican import pelicanRouter
+app = FastAPI()
+app.include_router(datasetRouter)
+app.include_router(pelicanRouter)
+app.mount("/api/static", StaticFiles(directory="api/static"), name="static")
+templates = Jinja2Templates(directory="api/templates")
+
+@app.get('/datasets', response_class=HTMLResponse)
+async def main_page(request: Request):
+    return templates.TemplateResponse(request,'datasets.html', {"ROOT_URL": request.scope.get('root_path', '')})
+
+    

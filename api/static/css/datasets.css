@@ -1,0 +1,96 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.arrow {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-right: 2.5px solid white;
+    border-bottom: 2.5px solid white;
+    transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+    margin-top: 20px;
+}
+
+.arrow.flipped {
+    transform: rotate(225deg) translate(-2px, -2px);
+}
+.dataset-card-container {
+    background-color: #0a0a0a;
+    min-height: 100vh;
+    width: 100%;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.dataset-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+.dataset-card {
+    position: relative;
+    width: 100%;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.dataset-card:hover {
+    border-color: #666;
+}
+
+.dataset-card-title-box {
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 6px;
+}
+
+.dataset-card-description {
+    font-size: 13px;
+    color: #aaa;
+    line-height: 1.5;
+}
+
+.dataset-card-desc-box {
+    font-size: 11px;
+    color: #ffffff;
+    font-family: monospace;
+    margin-top: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dataset-card-content {
+    display: none;
+    position: relative;
+    color: white;
+    background-color: #1a1a1a;
+    min-width: 160px;
+    height: 400px;
+    padding: 10px;
+}
+.file-browser-container{
+    position: relative;
+    width: 30%;
+    left:70%;
+    height: 100%;
+    border-radius:10px;
+    background-color: black;
+    border: 10px solid #121212;
+    color: white;
+}

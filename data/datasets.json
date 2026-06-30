@@ -1,0 +1,94 @@
+{
+    "datasets" : [
+        {
+            "id" : 0,
+            "name": "NOAA GOES-17",
+            "description" : "GOES-West geostationary satellite imagery covering the Western US and Pacific", 
+            "path": "osdf:///aws-opendata/us-east-1/noaa-goes17",
+            "format": "nc", 
+            "streamable": true,
+            "access": "public",
+            "tags": ["climate", "weather", "satellite", "atmospheric"]
+        },
+        {
+            "id" : 1,
+            "name": "NOAA GOES-16",
+            "description" : "GOES-East, covers Eastern US and Atlantic", 
+            "path": "osdf:///aws-opendata/us-east-1/noaa-goes16",
+            "format": "nc", 
+            "streamable": true,
+            "access": "public",
+            "tags": ["climate", "weather", "satellite", "atmospheric"]
+        },
+        {
+            "id" : 2,
+            "name": "NOAA GOES-18",
+            "description" : "GOES-West geostationary satellite imagery covering the Western US and Pacific", 
+            "path": "osdf:///aws-opendata/us-east-1/noaa-goes18",
+            "format": "nc", 
+            "streamable": true,
+            "access": "public",
+            "tags": ["climate", "weather", "satellite", "atmospheric"]
+        },
+        {
+            "id" : 3,
+            "name": "NOAA GOES-19",
+            "description" : "GOES-16 as GOES-East", 
+            "path": "osdf:///aws-opendata/us-east-1/noaa-goes19",
+            "format": "nc", 
+            "streamable": true,
+            "access": "public",
+            "tags": ["climate", "weather", "satellite", "atmospheric"]
+        },
+        {
+            "id" : 4,
+            "name": "NIH NCBI Sequence Read Archive ",
+            "description" : "raw DNA sequencing data and alignment information from high-throughput sequencing platforms", 
+            "path": "osdf:///aws-opendata/us-east-1/sra-pub-src-1/",
+            "format": ".bam, .cram, .fastq", 
+            "streamable": true,
+            "access": "public",
+            "tags": ["genetic", "life sciences"]
+        },
+        {
+            "id" : 5,
+            "name": "NEXRAD",
+            "description" : "network of 160 high-resolution Doppler radar sites that detects precipitation and atmospheric movement and disseminates data ", 
+            "path": "osdf:///aws-opendata/us-east-1/unidata-nexrad-level2-chunks/",
+            "format": "AR2v", 
+            "streamable": true,
+            "access": "public",
+            "tags": ["weather", "atmospheric"]
+        },
+        {
+            "id" : 6,
+            "name": "SpaceNet",
+            "description" : "imagery with co-registered map features. Before SpaceNet, computer vision researchers had minimal options to obtain free, precision-labeled, and high-resolution satellite imagery", 
+            "path": "osdf:///aws-opendata/us-east-1/spacenet-dataset/",
+            "format": "GeoTIFF", 
+            "streamable": true,
+            "access": "public",
+            "tags": ["satellite", "machine learning"]
+        },
+        {
+            "id" : 7,
+            "name": "Image classification - fast.ai datasets",
+            "description" : "Some of the most important datasets for image classification research, including CIFAR 10 and 100, Caltech 101, MNIST, Food-101, Oxford-102-Flowers, Oxford-IIIT-Pets, and Stanford-Cars", 
+            "path": "osdf:///aws-opendata/us-east-1/fast-ai-imageclas/",
+            "format": "tar", 
+            "streamable": false,
+            "access": "public",
+            "tags": ["image classification", "machine learning"]
+        },
+        {
+            "id" : 8,
+            "name": "OpenAlex",
+            "description" : "An open, comprehensive index of scolarly papers, citations, authors, institutions, and journals.", 
+            "path": "osdf:///aws-opendata/us-east-1/openalex/",
+            "format": "tar", 
+            "streamable": true,
+            "access": "public",
+            "tags": ["scholar", "academic"]
+        }
+    ]
+}
