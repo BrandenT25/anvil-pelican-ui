@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <title>This is the title of the webpage!</title>
+<   <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ ROOT_URL }}/api/static/css/home.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  </head>
+  <body>
+    <div class="home-navbar">
+        <div class="home-navbar-left">
+            <a href="{{ ROOT_URL }}/" class="navbar-logo">
+                <img src="{{ ROOT_URL }}/api/static/img/pelican-logo.WEBP" alt="pelican-logo" width="75" height="75" ></img>
+            </a>
+            <ul class="navbar-links">
+                <li><a href="{{ ROOT_URL }}/datasets" class="navbar-link">Explore Datasets</a></li>
+                <li><a href="{{ ROOT_URL }}/quick-access" class="navbar-link">Quick Access</a></li>
+                <li><a href="{{ ROOT_URL }}/about" class="navbar-link">About/Research</a></li>
+            </ul>
+        </div>
+        <div class="home-navbar-right">
+            <div class="navbar-purdue-logo">
+                <img src="{{ ROOT_URL }}/api/static/img/Purdue-logo.png" alt="purdue-logo" height="50px"></img>
+            </div>
+        </div>
+    </div>
+    <div class="page-columns">
+        <div class="left-column">
+            <div class="header-container">
+                <div class="header">
+                    <h1 class="header-text">Bring Data to your workflows, not the other way around</h1>
+                </div>
+            <div class="header-description">
+                <i class="ti ti-corner-down-right" style="font-size: 40px;"></i>
+                <h1 class="header-description-text">Discover datasets, grab a path or snippet, and get back to your analysis</h1>
+            </div>
+            </div>
+            <div class="cta-card-container">
+                <a href="/datasets">
+                    <div class="cta-card">
+                        <div class="cta-card-header">
+                            <img src="{{ ROOT_URL }}/api/static/img/mag-glass.png" alt="mag-glass" height="70"></img>
+                            <h1 class="cta-card-header-text">Explore Datasets</h1>
+                        </div>
+                        <div class="cta-card-description">
+                            <h1 class="cta-card-description-text">If you do not yet have a pelican endpoint for a dataset we have a wide array of already indexed datasets you can
+explore, included endpoints and usage examples!</h1>
+                        </div>
+                    </div>
+                </a>
+                <a href="/quick-access">
+                    <div class="cta-card">
+                        <div class="cta-card-header">
+                            <img src="{{ ROOT_URL }}/api/static/img/lightning-bolt.png" alt="mag-glass" height="70"></img>
+                            <h1 class="cta-card-header-text">Quick Access</h1>
+                        </div>
+                        <div class="cta-card-description">
+                            <h1 class="cta-card-description-text">If you already have an endpoint you can generate usage snippets and download datasets to your allocations!</h1>
+                        </div>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+        <div class="right-column">
+            <div class="datasets">
+
+            </div>
+        </div>
+    </div>
+  </body>
+</html>

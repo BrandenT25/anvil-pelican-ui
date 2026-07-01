@@ -11,7 +11,17 @@ app.mount("/api/static", StaticFiles(directory="api/static"), name="static")
 templates = Jinja2Templates(directory="api/templates")
 
 @app.get('/datasets', response_class=HTMLResponse)
-async def main_page(request: Request):
+async def dataset_page(request: Request):
     return templates.TemplateResponse(request,'datasets.html', {"ROOT_URL": request.scope.get('root_path', '')})
 
-    
+@app.get('/', response_class=HTMLResponse)
+async def main_page(request: Request):
+    return templates.TemplateResponse(request, "index.html", {"ROOT_URL": request.scope.get('root_path', '')})
+
+@app.get('/quick-access', response_class=HTMLResponse)
+async def main_page(request: Request):
+    return templates.TemplateResponse(request, "quick-access.html", {"ROOT_URL": request.scope.get('root_path', '')})
+
+@app.get('/about', response_class=HTMLResponse)
+async def main_page(request: Request):
+    return templates.TemplateResponse(request, "about.html", {"ROOT_URL": request.scope.get('root_path', '')})
