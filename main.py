@@ -12,7 +12,7 @@ templates = Jinja2Templates(directory="api/templates")
 
 @app.get('/datasets', response_class=HTMLResponse)
 async def dataset_page(request: Request):
-    return templates.TemplateResponse(request,'datasets.html', {"ROOT_URL": request.scope.get('root_path', '')})
+    return templates.TemplateResponse(request,'categories.html', {"ROOT_URL": request.scope.get('root_path', '')})
 
 @app.get('/', response_class=HTMLResponse)
 async def main_page(request: Request):
@@ -25,3 +25,7 @@ async def main_page(request: Request):
 @app.get('/about', response_class=HTMLResponse)
 async def main_page(request: Request):
     return templates.TemplateResponse(request, "about.html", {"ROOT_URL": request.scope.get('root_path', '')})
+
+@app.get('/datasets/category/{category}')
+async def category_page(category, request: Request):
+    return templates.TemplateResponse(request, "datasets.html", {"ROOT_URL": request.scope.get('root_path', ''), "CATEGORY": category})

@@ -1,0 +1,50 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+.home-navbar{
+    display:flex;
+    width:100%;
+    height:100px;
+    position:fixed;
+    top:0;
+    background-color: black;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    z-index: 1000;
+}
+.home-navbar-left{
+    background-color:black;
+    flex: 1.5;
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    border-radius: 10px;
+    gap: 5rem;
+}
+.home-navbar-right{
+    background-color:#cfb991;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+}
+.navbar-logo{
+}
+.navbar-links{
+    display: flex;
+    gap: 7rem;  
+    list-style:None;
+    margin-left: 3rem;
+}
+.navbar-link{
+    color: white;
+    font-size:30px;
+    font-family: Poppins, sans-serif;
+    text-decoration: none;
+}
+.navbar-purdue-logo{
+    margin-left:auto;
+}

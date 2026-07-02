@@ -2,16 +2,16 @@
 <html>
   <head>
     <title>This is the title of the webpage!</title>
-        <script>window.ROOT_PATH = "{{ROOT_URL}}" </script>
+    <script>window.ROOT_PATH = "{{ROOT_URL}}" </script>
+    <script>window.CATEGORY = "{{CATEGORY}}"</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="{{ROOT_PATH}}/api/static/css/about.css">
-  
+    <script src="{{ROOT_URL}}/api/static/js/categories.js"></script>
+    <link rel="stylesheet" href="{{ROOT_URL}}/api/static/css/categories.css">
   </head>
   <body>
-    <div class="home-navbar">
+   <div class="home-navbar">
         <div class="home-navbar-left">
             <a href="{{ ROOT_URL }}/" class="navbar-logo">
                 <img src="{{ ROOT_URL }}/api/static/img/pelican-logo.WEBP" alt="pelican-logo" width="75" height="75" ></img>
@@ -28,8 +28,8 @@
             </div>
         </div>
     </div>
-
-
+    <div class="category-card-container">
+     
     </div>
   </body>
 </html>

@@ -1,0 +1,28 @@
+{
+    "categories":[
+        {
+            "name": "Earth / Climate",
+            "url": "earth-climate",
+            "icon": "api/static/img/climate-category-icon.webp",
+            "description": "Satellite imagery, climate models, and atmospheric data"
+        },
+        {
+            "name": "Machine Learning",
+            "url": "machine-learning",
+            "icon": "api/static/img/machine-learning-category-icon.png",
+            "description": "Satellite imagery, climate models, and atmospheric data"
+        },
+        {
+            "name": "Physics",
+            "url": "physics",
+            "icon": "api/static/img/physics-category-icon.png",
+            "description": "Satellite imagery, climate models, and atmospheric data"
+        },
+        {
+            "name": "Genomics",
+            "url": "genomics",
+            "icon": "api/static/img/genomics-category-icon.png",
+            "description": "Satellite imagery, climate models, and atmospheric data"
+        }
+    ]
+}

@@ -12,7 +12,7 @@ USER = os.environ.get("USER")
 SCRATCH_PATH = os.path.join("/anvil", "scratch", USER)
 
 
-@pelicanRouter.get("/datasets/list-path")
+@pelicanRouter.get("/datasets/category/list-path")
 def pelicanlistPath(path: str):
     paths = osdf.ls(path)
     return paths
@@ -23,3 +23,4 @@ def pelicanDownloadObject(storageLocation:str, filepath):
     if storageLocation == "scratch":
         osdf.get(filepath, SCRATCH_PATH, recursive=True )
     return "File Downloaded"
+
