@@ -1,6 +1,21 @@
+/*
+*=====================================================================
+* Script for dataset
+*=====================================================================
+* This script handles the search bar along with creating each dataset
+* card that will generate. includes downloading and traversal of
+* dataset directories that lets you select individual files
+*=====================================================================
+*/
+
+/**
+ *  
+ * Fetches datasets from datasets.json and for each datasets makes a new card
+ * 
+ * @returns {Promise<void}
+*/
 async function fetchDatasets() {
     try{
-        
         const datasetResponse = await fetch(`${window.ROOT_PATH}/retrieve-datasets`);
         if (!datasetResponse.ok){
             throw new Error(`HTTP error! status ${datasetResponse.status} `);
@@ -18,13 +33,17 @@ async function fetchDatasets() {
     }
 }
 
-
-async function addDatasetCard(dataset) {
+/**
+ * 
+ * Takes in the dataset card element, makes html, including all listeners to 
+ * make the file directory browser and checkmarks
+ * 
+ * @param {HTMLElement} dataset 
+ */
+function addDatasetCard(dataset) {
     try{
         const newCard = document.createElement("div");
-        const container = document.querySelector(".dataset-card-container");
-
-
+        newCard.className = "dataset-card";
         newCard.innerHTML = `
             <div class="dataset-card-top">
                 <div class="dataset-card-header">
@@ -49,19 +68,23 @@ async function addDatasetCard(dataset) {
                 </div>
             </div>
         `;
+
+        const container = document.querySelector(".dataset-card-container");
         const file_container = newCard.querySelector(".file-browser-directory-container")
         const breadcrumbs = newCard.querySelector(".file-browser-breadcrumbs")
         const download_card = newCard.querySelector(".file-browser-download-amount");
         const download_button = newCard.querySelector(".file-browser-download-button")
-        file_container.downloadPaths = new Map();
-
-        file_container.downloadAmount = file_container.downloadPaths.size
         const header = newCard.querySelector(".dataset-card-top")
+
+        file_container.downloadPaths = new Map();
+        file_container.downloadAmount = file_container.downloadPaths.size
+
         download_button.addEventListener("click", (event) => {
             file_container.downloadPaths.forEach((value, key)=>{
                 download_file(key)
             })
         })
+
         header.addEventListener("click", (event) => {
             const drop_down = newCard.querySelector(".dataset-card-content");
             const isToggled = newCard.dataset.toggled === 'true';
@@ -78,206 +101,245 @@ async function addDatasetCard(dataset) {
 
             }
         }) 
-        newCard.className = "dataset-card";
+
         container.appendChild(newCard);
+
     }catch (error) {
         console.log("adding dataset failed with ", error);
     }
 }
 
+/**
+ * 
+ * Takes in path from the dataset along with related HTML DOM elements, reinitialized
+ * the directory window with updated path, creates breadcrumbs and directory folder cards
+ * 
+ * @param {string} path 
+ * @param {HTMLElement} container 
+ * @param {HTMLElement} breadcrumbs 
+ * @param {HTMLElement} download_card 
+ */
 
-async function loadDirectory(path, container, breadcrumbs, download_card){
-    try{
-        container.currentPath = path;
-        if (!container.basePath) {
-            container.basePath = path;
+function loadDirectory(path, container, breadcrumbs, download_card){
+    container.currentPath = path;
+    if (!container.basePath) {
+        container.basePath = path;
+    }
+
+    container.innerHTML = ""
+    breadcrumbs.innerHTML = "";
+
+    makeBreadcrumbs(breadcrumbs, container, download_card)
+    makeFolderCards(path, container, download_card, breadcrumbs)
+}
+
+
+/**
+ * 
+ * takes in all of the parent attributes to make each folder card, along with ancestor selections,
+ * adds all needed event listeners for checkbox, sub directories, and downloading
+ * 
+ * 
+ * @param {string} path 
+ * @param {HTMLElement} container 
+ * @param {HTMLElement} download_card 
+ * @param {HTMLElement} breadcrumbs
+ * @returns {Promise<void>} 
+ */
+async function makeFolderCards(path, container, download_card, breadcrumbs){
+    const paths = await retrieveDirectoryPaths(path);
+    console.log(paths)
+    paths.forEach(folder_path => {
+        const cleanedPath = folder_path.name.replace(/\/$/, "");
+        const name = cleanedPath.split("/").pop();
+        const newCard = document.createElement("div")
+        let imageFile;
+
+
+        if(folder_path["type"] === "directory"){
+            imageFile = "folder-icon.png"
+        }else{
+            imageFile = "file-icon.png"
         }
-        container.innerHTML = ""
-        breadcrumbs.innerHTML = "";
-        const parts = container.currentPath.split("/").filter(Boolean);
-        console.log(parts);
-        const baseParts = container.basePath.split("/").filter(Boolean);
-        console.log("basePath:", container.basePath, "| baseParts.length:", baseParts.length);
-        console.log("currentPath:", container.currentPath, "| parts:", parts, "| parts.length:", parts.length);
-        const rootLabel = document.createElement("div");
-        rootLabel.className = "part-card";
-        rootLabel.innerHTML = `<span style="cursor:pointer;">${baseParts[baseParts.length - 1]}</span>`;
-        rootLabel.addEventListener("click", (event) => {
-            event.stopPropagation();
-            loadDirectory(container.basePath, container, breadcrumbs, download_card);
-        });
-        breadcrumbs.appendChild(rootLabel);
-        parts.forEach((part, index) =>{
-            const partCard = document.createElement("div")
-            const subPath = "/" + parts.slice(0, index + 1).join("/");
-            if (index < baseParts.length) {
-                return; 
-            }
-            if(index !== 0){
-                const separator = document.createElement("span");
-                separator.textContent = "<";
-                separator.className = "breadcrumb-separator";
-                breadcrumbs.appendChild(separator);
-            }
 
-            partCard.className = "part-card"
-            partCard.innerHTML = `
-            <span style="cursor:pointer;">${part}</span>
-            `
-            partCard.addEventListener("click",(event) => {
-                event.stopPropagation()
-                console.log(subPath)
-                loadDirectory(subPath, container, breadcrumbs, download_card)
-            })
-            breadcrumbs.appendChild(partCard)
-        })
-        console.log(parts);
-        const response = await fetch(`${window.ROOT_PATH}/datasets/category/list-path?path=${path}`)
-        if(!response.ok){
-            throw new Error(`HTTP error! status ${datasetResponse.status} `);
+        newCard.className = "file-browser-directory-folder"
+        newCard.dataset.path = folder_path.name
+
+        newCard.innerHTML = `
+        <label class="folder-checkbox-wrapper">
+            <input type="checkbox" class="folder-checkbox"></input>
+            <span class="folder-checkbox-custom"></span>
+        </label>
+        <img src="${window.ROOT_PATH}/api/static/img/${imageFile}" alt="folder-icon" height="20"></img>
+        <div class="folder-name-box">
+            ${name} 
+        </div>
+        `
+
+        const checkBox = newCard.querySelector(".folder-checkbox")
+        const clearBox = download_card.querySelector(".file-browser-download-clear")
+        const fullPath = folder_path.name;
+        const isDirectlySelected = container.downloadPaths.has(fullPath);
+        const folderName = newCard.querySelector(".folder-name-box")
+
+        let coveringAncestor = null;
+        for (const selectedPath of container.downloadPaths.keys()) {
+            if (fullPath !== selectedPath && fullPath.startsWith(selectedPath.replace(/\/$/, "") + "/")) {
+                coveringAncestor = selectedPath;
+                break;
+            }
         }
-        const paths = await response.json()
-        console.log(paths)
-        paths.forEach(folder_path => {
+        checkBox.checked = isDirectlySelected || Boolean(coveringAncestor);
+        checkBox.disabled = Boolean(coveringAncestor) && !isDirectlySelected;
+        checkBox.addEventListener("change", (event) => {
+            if(event.target.checked){
 
-            const cleanedPath = folder_path.name.replace(/\/$/, "");
-            const name = cleanedPath.split("/").pop();
-            const newCard = document.createElement("div")
-            console.log("raw name:", folder_path.name);
-            if(folder_path["type"] === "directory"){
-                newCard.className = "file-browser-directory-folder"
-                newCard.dataset.path = folder_path.name
-                newCard.innerHTML = `
-                <label class="folder-checkbox-wrapper">
-                    <input type="checkbox" class="folder-checkbox"></input>
-                    <span class="folder-checkbox-custom"></span>
-                </label>
-                <img src="${window.ROOT_PATH}/api/static/img/folder-icon.png" alt="folder-icon" height="20"></img>
-                <div class="folder-name-box">
-                    ${name} 
-                </div>
-                `
-                const folderName = newCard.querySelector(".folder-name-box")
-                const checkBox = newCard.querySelector(".folder-checkbox")
-                const clearBox = download_card.querySelector(".file-browser-download-clear")
-                const fullPath = folder_path.name;
-                const isDirectlySelected = container.downloadPaths.has(fullPath);
-                let coveringAncestor = null;
-                for (const selectedPath of container.downloadPaths.keys()) {
-                    if (fullPath !== selectedPath && fullPath.startsWith(selectedPath.replace(/\/$/, "") + "/")) {
-                        coveringAncestor = selectedPath;
-                        break;
-                    }
-                }
-                checkBox.checked = isDirectlySelected || Boolean(coveringAncestor);
-                checkBox.disabled = Boolean(coveringAncestor) && !isDirectlySelected;
-                checkBox.addEventListener("change", (event) => {
-                    if(event.target.checked){
-                        console.log("folder added")
-                        container.downloadPaths.set(folder_path.name, folder_path.type)
-                        console.log(container.downloadPaths)
-                        container.downloadAmount = container.downloadPaths.size
-                        if(container.downloadAmount === 1){
-                            download_card.innerHTML = `
-                            <span>${container.downloadAmount} item selected</span>
-                        `
-                        }else{
-                            download_card.innerHTML = `
-                            <span>${container.downloadAmount} items selected</span>
-                        `
-                        }
-                        /*
-                        clearBox.innerHTML = `
-                            <div class="clear-button"></div>
-                        `
-                        const clearButton = clearBox.querySelector('.clear-button');
-                         clearButton.addEventListener("click", (event) =>{
-                            container.downloadPaths.clear();
-                            container.downloadAmount = container.downloadPaths.size;
-                            loadDirectory(container.currentPath, container, breadcrumbs, download_card)
-                        })*/
-         
-                        console.log(container.downloadAmount)
-                    } else{
-                        console.log("folder unadded")
-                        container.downloadPaths.delete(folder_path.name)
-                        container.downloadAmount = container.downloadPaths.size
-                        if(container.downloadAmount === 1){
-                            download_card.innerHTML = `
-                            <span>${container.downloadAmount} item selected</span>
-                        `
-                        }else{
-                            download_card.innerHTML = `
-                            <span>${container.downloadAmount} items selected</span>
-                        `
-                        }
-                        console.log(container.downloadPaths)
-                    }
-
-                })
-                folderName.addEventListener("click", (event) =>{
-                    const newPath = newCard.dataset.path
-                    console.log(newPath)
-                    loadDirectory(newPath, container, breadcrumbs, download_card)
-                    event.stopPropagation()
-                })
-
+                container.downloadPaths.set(folder_path.name, folder_path.type)
+                updateSelectionAmountBox(container, download_card)
             }else{
-                newCard.className = "file-browser-directory-file"
-                newCard.innerHTML = `
-                <label class="folder-checkbox-wrapper">
-                <input type="checkbox" class="folder-checkbox"></input>
-                <span class="folder-checkbox-custom"></span>
-                </label>
-                <img src="${window.ROOT_PATH}/api/static/img/file-icon.png" alt="folder-icon" height="20"></img>${name}
-                `
-                const folderName = newCard.querySelector(".folder-name-box")
-                const checkBox = newCard.querySelector(".folder-checkbox")
-                checkBox.checked = container.downloadPaths.has(folder_path.name);
-                checkBox.addEventListener("change", (event) => {
-                    if(event.target.checked){
-                        console.log("folder added")
-                        container.downloadPaths.set(folder_path.name, folder_path.type)
-                        console.log(container.downloadPaths)
-                        container.downloadAmount = container.downloadPaths.size
-                        if(container.downloadAmount === 1){
-                            download_card.innerHTML = `
-                            <span>${container.downloadAmount} item selected</span>
-                        `
-                        }else{
-                            download_card.innerHTML = `
-                            <span>${container.downloadAmount} items selected</span>
-                        `
-                        }
-         
-                        console.log(container.downloadAmount)
-                    } else{
-                        console.log("folder unadded")
-                        container.downloadPaths.delete(folder_path.name)
-                        container.downloadAmount = container.downloadPaths.size
-                        if(container.downloadAmount === 1){
-                            download_card.innerHTML = `
-                            <span>${container.downloadAmount} item selected</span>
-                        `
-                        }else{
-                            download_card.innerHTML = `
-                            <span>${container.downloadAmount} items selected</span>
-                        `
-                        }
-                        console.log(container.downloadPaths)
-                    }
-
-                })
+                container.downloadPaths.delete(folder_path.name)
+                updateSelectionAmountBox(container, download_card)
             }
-    
-
-            container.appendChild(newCard);
         })
+        if(folder_path["type"] === "directory"){
+            folderName.addEventListener("click", (event) =>{
+                const newPath = newCard.dataset.path
+                loadDirectory(newPath, container, breadcrumbs, download_card)
+                event.stopPropagation()
+            })
+        }
+        container.appendChild(newCard);
+    })
+}
+
+/**
+ * 
+ * fetches sub directories from a path
+ * 
+ * @param {string} path 
+ * @returns {Array<string>}
+ */
+async function retrieveDirectoryPaths(path){
+    try{
+
+        const response = await fetch((`${window.ROOT_PATH}/datasets/category/list-path?path=${path}`))
+        if(!response.ok){
+            throw new Error(`HTTP error! status ${response.status} `);
+        }
+
+        const paths = await response.json()
+        return paths;
+
     }catch (error){
         console.log("error with", error)
     }
 }
 
+/**
+ * 
+ * updates the box that lets you see how many files selected
+ * 
+ * @param {HTMLElement} container 
+ * @param {HTMLElement} download_card 
+ */
+function updateSelectionAmountBox(container, download_card){
+    container.downloadAmount = container.downloadPaths.size
+    if(container.downloadAmount === 1){
+        download_card.innerHTML = `
+        <span>${container.downloadAmount} item selected</span>
+    `
+    }else{
+        download_card.innerHTML = `
+        <span>${container.downloadAmount} items selected</span>
+    `
+    }
+}
+
+/**
+ * 
+ * makes breadcrumbs to allow you to go back folders
+ * 
+ * @param {HTMLElement} breadcrumbs 
+ * @param {HTMLElement} container 
+ * @param {HTMLElement} download_card 
+ */
+function makeBreadcrumbs(breadcrumbs, container, download_card){
+
+    const baseLength = container.basePath.split("/").filter(Boolean).length;
+    const parts = container.currentPath.split("/").filter(Boolean);
+    breadcrumbsMakeRootLabel(container, breadcrumbs, download_card);
+    parts.forEach((path, index) =>{
+
+        const subPath = "/" + parts.slice(0, index + 1).join("/");
+        const newCard = document.createElement("div");
+
+        if(index < baseLength){
+            return;
+        }
+
+        if(index > baseLength){
+            const separator = document.createElement("span");
+            separator.textContent = "/";
+            separator.className = "breadcrumb-separator";
+            breadcrumbs.appendChild(separator) 
+        }
+
+
+        newCard.className = "part-card"
+        newCard.innerHTML = `
+            <span style="cursor:pointer;">${path}</span>    
+        `
+
+        newCard.addEventListener("click", (event) => {
+            event.stopPropagation()
+            loadDirectory(subPath, container, breadcrumbs, download_card)
+        })
+
+
+        breadcrumbs.appendChild(newCard);
+
+
+    })
+    
+}
+
+/**
+ * 
+ * creates the clickable rootlabel for the breadcrumbs
+ * 
+ * @param {HTMLElement} container 
+ * @param {HTMLElement} breadcrumbs 
+ * @param {HTMLElement} download_card 
+ */
+function breadcrumbsMakeRootLabel(container, breadcrumbs, download_card){
+
+    const baseParts = container.basePath.split("/").filter(Boolean);
+    const newCard = document.createElement("div");
+
+    newCard.className = "part-card";
+    newCard.innerHTML = `<span style="cursor:pointer;">${baseParts[baseParts.length - 1]} </span>`;
+    
+    newCard.addEventListener("click", (event) => {
+            event.stopPropagation();
+            loadDirectory(container.basePath, container, breadcrumbs, download_card);
+    });
+    
+    const separator = document.createElement("span");
+    separator.textContent = "/";
+    separator.className = "breadcrumb-separator";
+    
+    breadcrumbs.appendChild(newCard);
+    breadcrumbs.appendChild(separator);
+}
+
+/**
+ * 
+ * just reaches fastapi endpoint to download a file
+ * will add selection for where to store
+ * 
+ * @param {string} path 
+ * @returns {Promise<void>}
+ */
 async function download_file(path){
     try{
         fetch(`${window.ROOT_PATH}/datasets/download/scratch?filepath=${path}`)
@@ -285,6 +347,12 @@ async function download_file(path){
         console.log("error with", error)
     }
 }
+
+/**
+ * 
+ * just reads DOM window refresh and calls functions that need to be generates at start of window
+ * 
+ */
 function main(){
     document.addEventListener("DOMContentLoaded", (event) => {
         fetchDatasets();

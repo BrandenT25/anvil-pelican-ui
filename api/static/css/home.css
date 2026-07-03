@@ -44,7 +44,7 @@ a {
 }
 .navbar-link{
     color: white;
-    font-size:30px;
+    font-size:1.172vw;
     font-family: Poppins, sans-serif;
     text-decoration: none;
 }
@@ -99,7 +99,7 @@ a {
 }
 .header-text{
     font-family: Poppins, sans-serif;
-    font-size: 50px;
+    font-size: 1.953vw;
 }
 .header-description{
     height:3rem;
@@ -109,7 +109,7 @@ a {
 }
 .header-description-text{
     font-family: Poppins, sans-serif;
-    font-size:20px;
+    font-size:.781vw;
     margin-top:10px;
 
 }
@@ -131,13 +131,13 @@ a {
     text-decoration: none;
     font-family: Poppins, sans-serif;
     color:black;
-    font-size:50px;
+    font-size:1.953vw;
 
 }
 .cta-card-description-text{
     text-decoration: none;
     font-family: Poppins, sans-serif;
-    font-size:25px;
+    font-size:.977vw;
     color:black;
     
 }
@@ -200,13 +200,13 @@ a {
 }
 .datasets-header-title-text{
     color:white;
-    font-size: 50px;
+    font-size: 1.953vw;
     font-family: Poppins, sans-serif;
 
 }
 .datasets-header-description-text{
     color:white;
     font-family: Poppins, sans-serif;
-    font-size:30px;
+    font-size:1.172vw;
 
 }
