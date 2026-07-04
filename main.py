@@ -4,9 +4,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from api.routes.dataset import datasetRouter
 from api.routes.pelican import pelicanRouter
+from api.routes.local import localRouter
 app = FastAPI()
 app.include_router(datasetRouter)
 app.include_router(pelicanRouter)
+app.include_router(localRouter)
 app.mount("/api/static", StaticFiles(directory="api/static"), name="static")
 templates = Jinja2Templates(directory="api/templates")
 

@@ -9,7 +9,7 @@
 */
 
 /** 
- *   test
+ *   
  * Fetches datasets from datasets.json and for each datasets makes a new card
  * 
  * @returns {Promise<void}
@@ -43,6 +43,7 @@ async function fetchDatasets() {
 function addDatasetCard(dataset) {
     try{
         const newCard = document.createElement("div");
+        const container = document.querySelector(".dataset-card-container");
         newCard.className = "dataset-card";
         newCard.innerHTML = `
             <div class="dataset-card-top">
@@ -69,7 +70,6 @@ function addDatasetCard(dataset) {
             </div>
         `;
 
-        const container = document.querySelector(".dataset-card-container");
         const file_container = newCard.querySelector(".file-browser-directory-container")
         const breadcrumbs = newCard.querySelector(".file-browser-breadcrumbs")
         const download_card = newCard.querySelector(".file-browser-download-amount");
@@ -78,11 +78,9 @@ function addDatasetCard(dataset) {
 
         file_container.downloadPaths = new Map();
         file_container.downloadAmount = file_container.downloadPaths.size
-
         download_button.addEventListener("click", (event) => {
-            file_container.downloadPaths.forEach((value, key)=>{
-                download_file(key)
-            })
+            // still need to add path looping for downloading in overlay    
+            download_file(container, file_container.downloadPaths)
         })
 
         header.addEventListener("click", (event) => {
@@ -97,7 +95,10 @@ function addDatasetCard(dataset) {
                 drop_down.style.display = "block";
                 newCard.dataset.toggled = 'true';
                 arrow.classList.toggle("flipped")
-                loadDirectory(dataset["path"], file_container, breadcrumbs, download_card);
+                if(drop_down.isLoaded !== true){
+                    loadDirectory(dataset["path"], file_container, breadcrumbs, download_card);
+                    drop_down.isLoaded = true
+                }
 
             }
         }) 
@@ -154,11 +155,21 @@ async function makeFolderCards(path, container, download_card, breadcrumbs){
         const name = cleanedPath.split("/").pop();
         const newCard = document.createElement("div")
         let imageFile;
-
+        let fileSize;
 
         if(folder_path["type"] === "directory"){
             imageFile = "folder-icon.png"
         }else{
+            fileSize = folder_path["size"];
+            if(fileSize > 1000000000){
+                fileSize = fileSize / 1000000000
+            }else if(fileSize > 1000000){
+                fileSize = fileSize / 1000000
+                fileSize = truncateDecimals(fileSize, 1)
+                console.log(fileSize, "MB")
+            }else if(fileSize > 1000){
+                fileSize = fileSize / 1000
+            }
             imageFile = "file-icon.png"
         }
 
@@ -217,7 +228,7 @@ async function makeFolderCards(path, container, download_card, breadcrumbs){
  * fetches sub directories from a path
  * 
  * @param {string} path 
- * @returns {Array<string>}
+ * @returns {Promise<Array<Object>>}
  */
 async function retrieveDirectoryPaths(path){
     try{
@@ -340,13 +351,94 @@ function breadcrumbsMakeRootLabel(container, breadcrumbs, download_card){
  * @param {string} path 
  * @returns {Promise<void>}
  */
-async function download_file(path){
+function download_file(container, download_paths){
     try{
-        fetch(`${window.ROOT_PATH}/datasets/download/scratch?filepath=${path}`)
+        let selectedMedium = "";
+        function closeSelector(fileSelectorOverlay){
+            fileSelectorOverlay.classList.remove("show");
+        }
+        function changeMedium(medium, selectDownloadMedium, selectedMediumLabel){
+            selectedMediumLabel.textContent = medium
+            selectDownloadMedium.dataset.selectedMedium = medium
+            selectDownloadMediumContent.style.display = "none"
+            arrow.classList.toggle("flipped")
+            selectDownloadMedium.dataset.toggled = 'false'
+        }
+        const fileSelectorOverlay = document.querySelector(".download-file-selector-overlay");
+        const fileSelector = document.createElement("div");
+        ;
+        fileSelector.className = "download-file-selector"
+        fileSelector.innerHTML= `
+            <div class="download-file-selector-close-btn">
+                <span>&times;</span>
+            </div>
+            <div class="select-static-mediums-wrapper">
+                <div class="select-static-mediums-content">
+                    <div class="medium-selection-wrapper">
+                        <div class="medium-selection-card" id="home"><span class="medium-selection-card-label">/Home</span></div>
+                        <div class="medium-selection-card" id="project"><span class="medium-selection-card-label">/Project</span></div>
+                        <div class="medium-selection-card" id="scratch"><span class="medium-selection-card-label">/Scratch</span></div>
+                    </div>
+                </div>
+                <div class="select-static-mediums">
+                    <span class="selected-static-medium"></span>
+                    <span class="select-static-mediums-arrow"></span>
+                </div>
+                <div class="browse-medium-directory"></div>
+            </div>
+        
+        `
+
+        const staticMediumWrapper = fileSelector.querySelector(".select-static-mediums-wrapper")
+        const selectDownloadMedium = staticMediumWrapper.querySelector(".select-static-mediums")
+        const arrow = selectDownloadMedium.querySelector(".select-static-mediums-arrow")
+        const closeBtn = fileSelector.querySelector(".download-file-selector-close-btn")
+        const selectDownloadMediumContent = staticMediumWrapper.querySelector(".select-static-mediums-content")
+        const mediumSelectionWrapper = selectDownloadMediumContent.querySelector(".medium-selection-wrapper")
+        const selectHome = mediumSelectionWrapper.querySelector("#home")
+        const selectProject = mediumSelectionWrapper.querySelector("#project")
+        const selectScratch = mediumSelectionWrapper.querySelector("#scratch")
+        const selectedMediumLabel = selectDownloadMedium.querySelector(".selected-static-medium")
+        selectDownloadMedium.addEventListener("click", (event) => {
+            const isToggled = selectDownloadMedium.dataset.toggled === 'true';
+            if(isToggled){
+                selectDownloadMediumContent.style.display = "none"
+                arrow.classList.toggle("flipped")
+                selectDownloadMedium.dataset.toggled = 'false'
+            }else{
+                console.log("toggled")
+                arrow.classList.toggle("flipped")
+                selectDownloadMedium.dataset.toggled = 'true'
+                selectDownloadMediumContent.style.display = "block"
+                
+            }
+        });
+
+        selectHome.addEventListener("click", () => changeMedium("/Home", selectDownloadMedium ,selectedMediumLabel))
+        selectProject.addEventListener("click", () => changeMedium("/Project", selectDownloadMedium ,selectedMediumLabel))
+        selectScratch.addEventListener("click", () => changeMedium("/Scratch", selectDownloadMedium ,selectedMediumLabel))
+
+        closeBtn.addEventListener("click", () => closeSelector(fileSelectorOverlay));
+        fileSelectorOverlay.appendChild(fileSelector)
+        fileSelectorOverlay.classList.add("show");
+
+
+
+        // await fetch(`${window.ROOT_PATH}/datasets/download/scratch?filepath=${path}`)
     }catch(error){
         console.log("error with", error)
     }
 }
+
+async function fetchLocalDirectory(rootPath){
+    try{
+        const response = await fetch();
+    }catch (error){
+        console.log(error)
+    }
+}
+
+
 
 /**
  * 
@@ -357,6 +449,12 @@ function main(){
     document.addEventListener("DOMContentLoaded", (event) => {
         fetchDatasets();
     })
+}
+
+
+function truncateDecimals(number, digits) {
+  const multiplier = Math.pow(10, digits);
+  return Math.trunc(number * multiplier) / multiplier;
 }
 
 main();

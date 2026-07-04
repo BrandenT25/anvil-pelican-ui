@@ -1,9 +1,9 @@
 from fastapi import APIRouter
 from pelicanfs import OSDFFileSystem
-import fsspec, os, json
+import fsspec, os, json, shutil
 from pathlib import Path
 from collections import defaultdict
-osdf = OSDFFileSystem()
+osdf = OSDFFileSystem(direct_reads=True)
 
 pelicanRouter = APIRouter()
 ROOTPATH = Path.cwd()
@@ -16,11 +16,14 @@ SCRATCH_PATH = os.path.join("/anvil", "scratch", USER)
 def pelicanlistPath(path: str):
     paths = osdf.ls(path)
     return paths
-   
-@pelicanRouter.get("/datasets/download/{storageLocation}")
-def pelicanDownloadObject(storageLocation:str, filepath):
-    print(repr(filepath))
-    if storageLocation == "scratch":
-        osdf.get(filepath, SCRATCH_PATH, recursive=True )
-    return "File Downloaded"
 
+@pelicanRouter.get("/datasets/download/")
+def pelicanDownloadObject(storageLocation:str, filepath):
+    if storageLocation == "scratch":
+        print(osdf.info(filepath))
+        osdf.get(filepath, SCRATCH_PATH, recursive=True)
+        print(f"{filepath} downloaded at {storageLocation}")
+
+@pelicanRouter.get("datasets/")
+def giveSize():
+    return
