@@ -1,62 +1,147 @@
 /*
-*=====================================================================
-* Script for dataset
-*=====================================================================
-* This script handles the search bar along with creating each dataset
-* card that will generate. includes downloading and traversal of
-* dataset directories that lets you select individual files
-*=====================================================================
-*/
+ *=====================================================================
+ * Script for dataset
+ *=====================================================================
+ * This script handles the search bar along with creating each dataset
+ * card that will generate. includes downloading and traversal of
+ * dataset directories that lets you select individual files
+ *=====================================================================
+ */
 
-const user = window.USER
+const user = window.USER;
 
 const rootPaths = {
-    "home" : `/home/${USER}`,
-    "project": "/anvil/projects",
-    "scratch": `/anvil/scratch/${USER}`
+  home: `/home/${USER}`,
+  project: "/anvil/projects",
+  scratch: `/anvil/scratch/${USER}`,
+};
 
+const snippetTemplates = {
+  "python-pfs": 
+  `<pre><code class="language-python">
+    # pip install pelicanfs 
+    from pelicanfs import PelicanFileSystem
+    pelfs = PelicanFileSystem("pelican://osg-htc.org")
+    pelfs.ls("{path}")
+  </code></pre>`,
+  "python-osdf": `
+  <pre><code class="language-python">
+    # pip install pelicanfs
+    from pelicanfs import OSDFFileSystem
 
-}
+    osdf = OSDFFileSystem()
+    osdf.ls("{path}")
+  
+  </code></pre>`,
+  "python-fsspec-pfs": `<pre><code class="language-python">
+    import fsspec
 
+    fs = fsspec.filesystem("pelican")
+    fs.ls("{path}")
+  
+  </code></pre>`,
+  "python-fsspec-osdf": `<pre><code class="language-python">
+    import fsspec
 
-/** 
- *   
+    fs = fsspec.filesystem("osdf")
+    fs.ls("{path}")
+  
+  </code></pre>`,
+  "python-local-storage": `<pre><code class="language-python">
+    # pip install pelicanfs
+    from pelicanfs import OSDFFileSystem
+
+    osdf = OSDFFileSystem()
+    osdf.get("{path}", "/local/destination/path", recursive=True)
+  
+  </code></pre>`,
+  "python-xarray-osdf": `<pre><code class="language-python">
+    import xarray as xr
+
+    ds = xr.open_mfdataset("osdf://{path}/*", engine="zarr")
+  
+  </code></pre>`,
+  "python-xarray-map": `<pre><code class="language-python">
+    # pip install pelicanfs
+    import xarray as xr
+    from pelicanfs import PelicanFileSystem, PelicanMap
+
+    pelfs = PelicanFileSystem("pelican://osg-htc.org")
+    file = PelicanMap("{path}", pelfs)
+    ds = xr.open_dataset(file, engine="zarr")
+  
+  </code></pre>`,
+  "python-pandas": `<pre><code class="language-python">
+    import fsspec
+    import pandas as pd
+
+    fs = fsspec.filesystem("osdf")
+    with fs.open("{path}", "r") as f:
+    df = pd.read_csv(f)
+  
+  </code></pre>`,
+  "python-pytorch-list": `<pre><code class="language-python">
+    # pip install torchdata
+    import torch
+    torch.utils.data.datapipes.utils.common.DILL_AVAILABLE = torch.utils._import_utils.dill_available()
+    from torchdata.datapipes.iter import IterableWrapper
+
+    dp = IterableWrapper(["osdf://{path}"]).list_files_by_fsspec()
+    print(list(dp))
+  
+  </code></pre>`,
+  "python-pytorch-stream": `<pre><code class="language-python">
+  import torch
+  torch.utils.data.datapipes.utils.common.DILL_AVAILABLE = torch.utils._import_utils.dill_available()
+  from torchdata.datapipes.iter import IterableWrapper
+
+  dp = IterableWrapper(["osdf://{path}"]).open_files_by_fsspec()
+  for file_path, filestream in dp:
+      print(file_path, filestream)
+
+  </code></pre>`,
+  "pelican-cli": `<pre><code class="language-bash">
+    pelican object get "osdf://{path}" /local/destination/path
+  </code></pre>`,
+};
+
+/**
  * Fetches datasets from datasets.json and for each datasets makes a new card
- * 
  * @returns {Promise<void}
-*/
+ */
 async function fetchDatasets() {
-    try{
-        const datasetResponse = await fetch(`${window.ROOT_PATH}/retrieve-datasets`);
-        if (!datasetResponse.ok){
-            throw new Error(`HTTP error! status ${datasetResponse.status} `);
-        }
-        const datasets = await datasetResponse.json();
-        datasets.forEach(dataset => {
-            dataset["tags"].forEach(tag => {
-                if(tag == window.CATEGORY){
-                    addDatasetCard(dataset);
-                }
-            })
-        })
-    } catch (error) {
-        console.log("fetch operation failed", error);
+  try {
+    const datasetResponse = await fetch(
+      `${window.ROOT_PATH}/retrieve-datasets`,
+    );
+    if (!datasetResponse.ok) {
+      throw new Error(`HTTP error! status ${datasetResponse.status} `);
     }
+    const datasets = await datasetResponse.json();
+    datasets.forEach((dataset) => {
+      dataset["tags"].forEach((tag) => {
+        if (tag == window.CATEGORY) {
+          addDatasetCard(dataset);
+        }
+      });
+    });
+  } catch (error) {
+    console.log("fetch operation failed", error);
+  }
 }
 
 /**
- * 
- * Takes in the dataset card element, makes html, including all listeners to 
+ * Takes in the dataset card element, makes html, including all listeners to
  * make the file directory browser and checkmarks
- * 
- * @param {HTMLElement} dataset 
+ * @param {HTMLElement} dataset
  */
+
 function addDatasetCard(dataset) {
-    try{
-        const newCard = document.createElement("div");
-        const container = document.querySelector(".dataset-card-container");
-        newCard.className = "dataset-card";
-        newCard.innerHTML = `
+  try {
+    const newCard = document.createElement("div");
+    const container = document.querySelector(".dataset-card-container");
+    newCard.className = "dataset-card";
+    newCard.innerHTML = /* html */ `
             <div class="dataset-card-top">
                 <div class="dataset-card-header">
                     <span class="dataset-card-title-box">${dataset.name}</span>
@@ -65,7 +150,29 @@ function addDatasetCard(dataset) {
                 <div class="dataset-card-desc-box">${dataset.description}</div>
             </div>
             <div class="dataset-card-content">
-                <div class="file-browser-container">
+              <div class="dataset-description-container">
+              </div>
+
+              <div class="dataset-snippet-container">
+                <div class="dataset-snippet-header">
+                  <div class="dataset-snippet-header-text-box">
+                    <h1>Snippets</h1>
+                  </div>
+                  <div class ="dataset-snippet-header-split"></div>
+                  <div class="dataset-snippet-selector-box">
+                    <span class="dataset-snippet-selector-text"></span>
+                    <div class="dataset-snippet-selector-arrow"></div>
+                  </div>
+                  <div class="dataset-snippet-selector-content">
+                    
+                  </div>
+                  </div>
+                <div class="dataset-snippet-wrapper">
+                  <div class="fa fa-copy"></div>
+                  <div class="dataset-snippet-box"> </div>
+                </div>
+              </div>
+              <div class="file-browser-container">
                     <div class="file-browser-header">
                         <h1>${dataset["name"]}</h1>
                         <div class="file-browser-header-split"></div>
@@ -73,7 +180,9 @@ function addDatasetCard(dataset) {
                     </div>
                     <div class="file-browser-directory-container"></div>
                     <div class="file-browser-download-container">
-                        <div class="file-browser-download-button"><span>Download</span></div>
+                        <div class="file-browser-download-button">
+                            <span class="file-browser-download-button-text">Select Folder</span>
+                        </div>
                         <div class="file-browser-download-amount"></div>
                         <div class="file-browser-download-clear"></div>
                     </div>
@@ -81,113 +190,116 @@ function addDatasetCard(dataset) {
             </div>
         `;
 
-        const file_container = newCard.querySelector(".file-browser-directory-container")
-        const breadcrumbs = newCard.querySelector(".file-browser-breadcrumbs")
-        const download_card = newCard.querySelector(".file-browser-download-amount");
-        const download_button = newCard.querySelector(".file-browser-download-button")
-        const header = newCard.querySelector(".dataset-card-top")
+    const file_container = newCard.querySelector(
+      ".file-browser-directory-container",
+    );
+    const breadcrumbs = newCard.querySelector(".file-browser-breadcrumbs");
+    const download_card = newCard.querySelector(
+      ".file-browser-download-amount",
+    );
+    const download_button = newCard.querySelector(
+      ".file-browser-download-button",
+    );
+    const header = newCard.querySelector(".dataset-card-top");
+    const snippets = newCard.querySelector(".dataset-card-content").querySelector(".dataset-snippet-container")
+    file_container.downloadPaths = new Map();
+    file_container.downloadAmount = file_container.downloadPaths.size;
+    download_button.addEventListener("click", (event) => {
+      // still need to add path looping for downloading in overlay
+      console.log(file_container.downloadPaths);
+      download_file(file_container, file_container.downloadPaths);
+    });
 
-        file_container.downloadPaths = new Map();
-        file_container.downloadAmount = file_container.downloadPaths.size
-        download_button.addEventListener("click", (event) => {
-            // still need to add path looping for downloading in overlay
-            console.log(file_container.downloadPaths)    
-            download_file(file_container, file_container.downloadPaths)
-        })
-
-        header.addEventListener("click", (event) => {
-            const drop_down = newCard.querySelector(".dataset-card-content");
-            const isToggled = newCard.dataset.toggled === 'true';
-            const arrow = newCard.querySelector(".arrow");
-            if (isToggled){
-                drop_down.style.display = "none";
-                newCard.dataset.toggled = 'false';
-                arrow.classList.toggle("flipped")
-            } else{
-                drop_down.style.display = "block";
-                newCard.dataset.toggled = 'true';
-                arrow.classList.toggle("flipped")
-                if(drop_down.isLoaded !== true){
-                    loadDirectory(dataset["path"], file_container, breadcrumbs, download_card);
-                    drop_down.isLoaded = true
-                }
-
-            }
-        }) 
-
-        container.appendChild(newCard);
-
-    }catch (error) {
-        console.log("adding dataset failed with ", error);
-    }
+    header.addEventListener("click", (event) => {
+      const drop_down = newCard.querySelector(".dataset-card-content");
+      const isToggled = newCard.dataset.toggled === "true";
+      const arrow = newCard.querySelector(".arrow");
+      if (isToggled) {
+        drop_down.style.display = "none";
+        newCard.dataset.toggled = "false";
+        arrow.classList.toggle("flipped");
+      } else {
+        drop_down.style.display = "flex";
+        newCard.dataset.toggled = "true";
+        arrow.classList.toggle("flipped");
+        if (drop_down.isLoaded !== true) {
+          loadDirectory(
+            dataset["path"],
+            file_container,
+            breadcrumbs,
+            download_card,
+          );
+          drop_down.isLoaded = true;
+        }
+      }
+    });
+    buildSnippets(snippets,dataset)
+    container.appendChild(newCard);
+  } catch (error) {
+    console.log("adding dataset failed with ", error);
+  }
 }
 
 /**
- * 
  * Takes in path from the dataset along with related HTML DOM elements, reinitialized
  * the directory window with updated path, creates breadcrumbs and directory folder cards
- * 
- * @param {string} path 
- * @param {HTMLElement} container 
- * @param {HTMLElement} breadcrumbs 
- * @param {HTMLElement} download_card 
+ * @param {string} path
+ * @param {HTMLElement} container
+ * @param {HTMLElement} breadcrumbs
+ * @param {HTMLElement} download_card
  */
 
-function loadDirectory(path, container, breadcrumbs, download_card){
-    container.currentPath = path;
-    if (!container.basePath) {
-        container.basePath = path;
-    }
+function loadDirectory(path, container, breadcrumbs, download_card) {
+  container.currentPath = path;
+  if (!container.basePath) {
+    container.basePath = path;
+  }
 
-    container.innerHTML = ""
-    breadcrumbs.innerHTML = "";
+  container.innerHTML = "";
+  breadcrumbs.innerHTML = "";
 
-    makeBreadcrumbs(breadcrumbs, container, download_card)
-    makeFolderCards(path, container, download_card, breadcrumbs)
+  makeBreadcrumbs(breadcrumbs, container, download_card);
+  makeFolderCards(path, container, download_card, breadcrumbs);
 }
 
-
 /**
- * 
  * takes in all of the parent attributes to make each folder card, along with ancestor selections,
  * adds all needed event listeners for checkbox, sub directories, and downloading
- * 
- * 
- * @param {string} path 
- * @param {HTMLElement} container 
- * @param {HTMLElement} download_card 
+ * @param {string} path
+ * @param {HTMLElement} container
+ * @param {HTMLElement} download_card
  * @param {HTMLElement} breadcrumbs
- * @returns {Promise<void>} 
+ * @returns {Promise<void>}
  */
-async function makeFolderCards(path, container, download_card, breadcrumbs){
-    const paths = await retrieveDirectoryPaths(path);
-    paths.forEach(folder_path => {
-        const cleanedPath = folder_path.name.replace(/\/$/, "");
-        const name = cleanedPath.split("/").pop();
-        const newCard = document.createElement("div")
-        let imageFile;
-        let fileSize;
+async function makeFolderCards(path, container, download_card, breadcrumbs) {
+  const paths = await retrieveDirectoryPaths(path);
+  paths.forEach((folder_path) => {
+    const cleanedPath = folder_path.name.replace(/\/$/, "");
+    const name = cleanedPath.split("/").pop();
+    const newCard = document.createElement("div");
+    let imageFile;
+    let fileSize;
 
-        if(folder_path["type"] === "directory"){
-            imageFile = "folder-icon.png"
-        }else{
-            fileSize = folder_path["size"];
-            if(fileSize > 1000000000){
-                fileSize = fileSize / 1000000000
-            }else if(fileSize > 1000000){
-                fileSize = fileSize / 1000000
-                fileSize = truncateDecimals(fileSize, 1)
-                console.log(fileSize, "MB")
-            }else if(fileSize > 1000){
-                fileSize = fileSize / 1000
-            }
-            imageFile = "file-icon.png"
-        }
+    if (folder_path["type"] === "directory") {
+      imageFile = "folder-icon.png";
+    } else {
+      fileSize = folder_path["size"];
+      if (fileSize > 1000000000) {
+        fileSize = fileSize / 1000000000;
+      } else if (fileSize > 1000000) {
+        fileSize = fileSize / 1000000;
+        fileSize = truncateDecimals(fileSize, 1);
+        console.log(fileSize, "MB");
+      } else if (fileSize > 1000) {
+        fileSize = fileSize / 1000;
+      }
+      imageFile = "file-icon.png";
+    }
 
-        newCard.className = "file-browser-directory-folder"
-        newCard.dataset.path = folder_path.name
+    newCard.className = "file-browser-directory-folder";
+    newCard.dataset.path = folder_path.name;
 
-        newCard.innerHTML = `
+    newCard.innerHTML = `
         <label class="folder-checkbox-wrapper">
             <input type="checkbox" class="folder-checkbox"></input>
             <span class="folder-checkbox-custom"></span>
@@ -196,190 +308,190 @@ async function makeFolderCards(path, container, download_card, breadcrumbs){
         <div class="folder-name-box">
             ${name} 
         </div>
-        `
+        `;
 
-        const checkBox = newCard.querySelector(".folder-checkbox")
-        const clearBox = download_card.querySelector(".file-browser-download-clear")
-        const fullPath = folder_path.name;
-        const isDirectlySelected = container.downloadPaths.has(fullPath);
-        const folderName = newCard.querySelector(".folder-name-box")
+    const checkBox = newCard.querySelector(".folder-checkbox");
+    const clearBox = download_card.querySelector(
+      ".file-browser-download-clear",
+    );
+    const fullPath = folder_path.name;
+    const isDirectlySelected = container.downloadPaths.has(fullPath);
+    const folderName = newCard.querySelector(".folder-name-box");
 
-        let coveringAncestor = null;
-        for (const selectedPath of container.downloadPaths.keys()) {
-            if (fullPath !== selectedPath && fullPath.startsWith(selectedPath.replace(/\/$/, "") + "/")) {
-                coveringAncestor = selectedPath;
-                break;
-            }
-        }
-        checkBox.checked = isDirectlySelected || Boolean(coveringAncestor);
-        checkBox.disabled = Boolean(coveringAncestor) && !isDirectlySelected;
-        checkBox.addEventListener("change", (event) => {
-            if(event.target.checked){
-
-                container.downloadPaths.set(folder_path.name, folder_path.type)
-                updateSelectionAmountBox(container, download_card)
-            }else{
-                container.downloadPaths.delete(folder_path.name)
-                updateSelectionAmountBox(container, download_card)
-            }
-        })
-        if(folder_path["type"] === "directory"){
-            folderName.addEventListener("click", (event) =>{
-                const newPath = newCard.dataset.path
-                loadDirectory(newPath, container, breadcrumbs, download_card)
-                event.stopPropagation()
-            })
-        }
-        container.appendChild(newCard);
-    })
+    let coveringAncestor = null;
+    for (const selectedPath of container.downloadPaths.keys()) {
+      if (
+        fullPath !== selectedPath &&
+        fullPath.startsWith(selectedPath.replace(/\/$/, "") + "/")
+      ) {
+        coveringAncestor = selectedPath;
+        break;
+      }
+    }
+    checkBox.checked = isDirectlySelected || Boolean(coveringAncestor);
+    checkBox.disabled = Boolean(coveringAncestor) && !isDirectlySelected;
+    checkBox.addEventListener("change", (event) => {
+      if (event.target.checked) {
+        container.downloadPaths.set(folder_path.name, folder_path.type);
+        updateSelectionAmountBox(container, download_card);
+      } else {
+        container.downloadPaths.delete(folder_path.name);
+        updateSelectionAmountBox(container, download_card);
+      }
+    });
+    if (folder_path["type"] === "directory") {
+      folderName.addEventListener("click", (event) => {
+        const newPath = newCard.dataset.path;
+        loadDirectory(newPath, container, breadcrumbs, download_card);
+        event.stopPropagation();
+      });
+    }
+    container.appendChild(newCard);
+  });
 }
 
 /**
- * 
  * fetches sub directories from a path
- * 
- * @param {string} path 
+ * @param {string} path
  * @returns {Promise<Array<Object>>}
  */
-async function retrieveDirectoryPaths(path){
-    try{
-
-        const response = await fetch((`${window.ROOT_PATH}/datasets/category/list-path?path=${path}`))
-        if(!response.ok){
-            throw new Error(`HTTP error! status ${response.status} `);
-        }
-
-        const paths = await response.json()
-        return paths;
-
-    }catch (error){
-        console.log("error with", error)
+async function retrieveDirectoryPaths(path) {
+  try {
+    const response = await fetch(
+      `${window.ROOT_PATH}/datasets/category/list-path?path=${path}`,
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status ${response.status} `);
     }
+
+    const paths = await response.json();
+    return paths;
+  } catch (error) {
+    console.log("error with", error);
+  }
 }
 
 /**
- * 
  * updates the box that lets you see how many files selected
- * 
- * @param {HTMLElement} container 
- * @param {HTMLElement} download_card 
+ * @param {HTMLElement} container
+ * @param {HTMLElement} download_card
  */
-function updateSelectionAmountBox(container, download_card){
-    container.downloadAmount = container.downloadPaths.size
-    if(container.downloadAmount === 1){
-        download_card.innerHTML = `
+function updateSelectionAmountBox(container, download_card) {
+  container.downloadAmount = container.downloadPaths.size;
+  if (container.downloadAmount === 1) {
+    download_card.innerHTML = `
         <span>${container.downloadAmount} item selected</span>
-    `
-    }else{
-        download_card.innerHTML = `
+    `;
+  } else {
+    download_card.innerHTML = `
         <span>${container.downloadAmount} items selected</span>
-    `
-    }
+    `;
+  }
 }
 
 /**
- * 
  * makes breadcrumbs to allow you to go back folders
- * 
- * @param {HTMLElement} breadcrumbs 
- * @param {HTMLElement} container 
- * @param {HTMLElement} download_card 
+ * @param {HTMLElement} breadcrumbs
+ * @param {HTMLElement} container
+ * @param {HTMLElement} download_card
  */
-function makeBreadcrumbs(breadcrumbs, container, download_card){
-
-    const baseLength = container.basePath.split("/").filter(Boolean).length;
-    const parts = container.currentPath.split("/").filter(Boolean);
-    breadcrumbsMakeRootLabel(container, breadcrumbs, download_card);
-    parts.forEach((path, index) =>{
-
-        const subPath = "/" + parts.slice(0, index + 1).join("/");
-        const newCard = document.createElement("div");
-
-        if(index < baseLength){
-            return;
-        }
-
-        if(index > baseLength){
-            const separator = document.createElement("span");
-            separator.textContent = "/";
-            separator.className = "breadcrumb-separator";
-            breadcrumbs.appendChild(separator) 
-        }
-
-
-        newCard.className = "part-card"
-        newCard.innerHTML = `
-            <span style="cursor:pointer;">${path}</span>    
-        `
-
-        newCard.addEventListener("click", (event) => {
-            event.stopPropagation()
-            loadDirectory(subPath, container, breadcrumbs, download_card)
-        })
-
-
-        breadcrumbs.appendChild(newCard);
-
-
-    })
-    
-}
-
-/**
- * 
- * creates the clickable rootlabel for the breadcrumbs
- * 
- * @param {HTMLElement} container 
- * @param {HTMLElement} breadcrumbs 
- * @param {HTMLElement} download_card 
- */
-function breadcrumbsMakeRootLabel(container, breadcrumbs, download_card){
-
-    const baseParts = container.basePath.split("/").filter(Boolean);
+function makeBreadcrumbs(breadcrumbs, container, download_card) {
+  const baseLength = container.basePath.split("/").filter(Boolean).length;
+  const parts = container.currentPath.split("/").filter(Boolean);
+  breadcrumbsMakeRootLabel(container, breadcrumbs, download_card);
+  parts.forEach((path, index) => {
+    const subPath = "/" + parts.slice(0, index + 1).join("/");
     const newCard = document.createElement("div");
 
+    if (index < baseLength) {
+      return;
+    }
+
+    if (index > baseLength) {
+      const separator = document.createElement("span");
+      separator.textContent = "/";
+      separator.className = "breadcrumb-separator";
+      breadcrumbs.appendChild(separator);
+    }
+
     newCard.className = "part-card";
-    newCard.innerHTML = `<span style="cursor:pointer;">${baseParts[baseParts.length - 1]} </span>`;
-    
+    newCard.innerHTML = `
+            <span style="cursor:pointer;">${path}</span>    
+        `;
+
     newCard.addEventListener("click", (event) => {
-            event.stopPropagation();
-            loadDirectory(container.basePath, container, breadcrumbs, download_card);
+      event.stopPropagation();
+      loadDirectory(subPath, container, breadcrumbs, download_card);
     });
-    
-    const separator = document.createElement("span");
-    separator.textContent = "/";
-    separator.className = "breadcrumb-separator";
-    
+
     breadcrumbs.appendChild(newCard);
-    breadcrumbs.appendChild(separator);
+  });
 }
 
 /**
- * 
+ * creates the clickable rootlabel for the breadcrumbs
+ * @param {HTMLElement} container
+ * @param {HTMLElement} breadcrumbs
+ * @param {HTMLElement} download_card
+ */
+function breadcrumbsMakeRootLabel(container, breadcrumbs, download_card) {
+  const baseParts = container.basePath.split("/").filter(Boolean);
+  const newCard = document.createElement("div");
+
+  newCard.className = "part-card";
+  newCard.innerHTML = `<span style="cursor:pointer;">${baseParts[baseParts.length - 1]} </span>`;
+
+  newCard.addEventListener("click", (event) => {
+    event.stopPropagation();
+    loadDirectory(container.basePath, container, breadcrumbs, download_card);
+  });
+
+  const separator = document.createElement("span");
+  separator.textContent = "/";
+  separator.className = "breadcrumb-separator";
+
+  breadcrumbs.appendChild(newCard);
+  breadcrumbs.appendChild(separator);
+}
+
+/**
  * just reaches fastapi endpoint to download a file
  * will add selection for where to store
- * 
- * @param {string} path 
+ * @param {string} path
  * @returns {Promise<void>}
  */
-function download_file(container, download_paths){
-    try{
-        let selectedMedium = "";
-        function closeSelector(fileSelectorOverlay){
-            fileSelectorOverlay.classList.remove("show");
-        }
-        function changeMedium(medium, selectDownloadMedium, selectedMediumLabel, selectedMedium, downloadLocationLabel){
-            selectedMedium.dataset.currentMedium = medium
-            makeLocalDirectoryCards(selectedMedium.dataset.currentMedium, medium, selectedMedium, selectedMediumLabel, downloadLocationLabel)
-            selectDownloadMediumContent.style.display = "none"
-            arrow.classList.toggle("flipped")
-            selectDownloadMedium.dataset.toggled = 'false'
-        }
-        const fileSelectorOverlay = document.querySelector(".download-file-selector-overlay");
-        const fileSelector = document.createElement("div");
-        fileSelectorOverlay.innerHTML = ``;
-        fileSelector.className = "download-file-selector"
-        fileSelector.innerHTML= `
+function download_file(container, download_paths) {
+  try {
+    let selectedMedium = "";
+    function closeSelector(fileSelectorOverlay) {
+      fileSelectorOverlay.classList.remove("show");
+    }
+    function changeMedium(
+      medium,
+      selectDownloadMedium,
+      selectedMediumLabel,
+      selectedMedium,
+      downloadLocationLabel,
+    ) {
+      selectedMedium.dataset.currentMedium = medium;
+      makeLocalDirectoryCards(
+        selectedMedium.dataset.currentMedium,
+        medium,
+        selectedMedium,
+        selectedMediumLabel,
+        downloadLocationLabel,
+      );
+      selectDownloadMediumContent.style.display = "none";
+      arrow.classList.toggle("flipped");
+      selectDownloadMedium.dataset.toggled = "false";
+    }
+    const fileSelectorOverlay = document.querySelector(
+      ".download-file-selector-overlay",
+    );
+    const fileSelector = document.createElement("div");
+    fileSelectorOverlay.innerHTML = ``;
+    fileSelector.className = "download-file-selector";
+    fileSelector.innerHTML = `
             <div class="download-file-selector-close-btn">
                 <span>&times;</span>
             </div>
@@ -406,152 +518,282 @@ function download_file(container, download_paths){
                 
                 </div>
             </div>
-        `
+        `;
 
-    
-        const staticMediumWrapper = fileSelector.querySelector(".select-static-mediums-wrapper")
-        const download_card = staticMediumWrapper.querySelector(".directory-download-container")
-        const downloadButton = download_card.querySelector(".directory-download-button")
-        const downloadLocation = download_card.querySelector(".directory-download-container-location")
-        const download_card_amount = download_card.querySelector(".directory-download-container-amount")
-        const selectDownloadMedium = staticMediumWrapper.querySelector(".select-static-mediums")
-        const arrow = selectDownloadMedium.querySelector(".select-static-mediums-arrow")
-        const closeBtn = fileSelector.querySelector(".download-file-selector-close-btn")
-        const selectDownloadMediumContent = staticMediumWrapper.querySelector(".select-static-mediums-content")
-        const mediumSelectionWrapper = selectDownloadMediumContent.querySelector(".medium-selection-wrapper")
-        const selectHome = mediumSelectionWrapper.querySelector("#home")
-        const selectProject = mediumSelectionWrapper.querySelector("#project")
-        const selectScratch = mediumSelectionWrapper.querySelector("#scratch")
-        const selectedMediumLabel = selectDownloadMedium.querySelector(".selected-static-medium")
-        const mediumDirectory = staticMediumWrapper.querySelector(".browse-medium-directory")
-        const backButton = staticMediumWrapper.querySelector(".download-directory-back-btn")
+    const staticMediumWrapper = fileSelector.querySelector(
+      ".select-static-mediums-wrapper",
+    );
+    const download_card = staticMediumWrapper.querySelector(
+      ".directory-download-container",
+    );
+    const downloadButton = download_card.querySelector(
+      ".directory-download-button",
+    );
+    const downloadLocation = download_card.querySelector(
+      ".directory-download-container-location",
+    );
+    const download_card_amount = download_card.querySelector(
+      ".directory-download-container-amount",
+    );
+    const selectDownloadMedium = staticMediumWrapper.querySelector(
+      ".select-static-mediums",
+    );
+    const arrow = selectDownloadMedium.querySelector(
+      ".select-static-mediums-arrow",
+    );
+    const closeBtn = fileSelector.querySelector(
+      ".download-file-selector-close-btn",
+    );
+    const selectDownloadMediumContent = staticMediumWrapper.querySelector(
+      ".select-static-mediums-content",
+    );
+    const mediumSelectionWrapper = selectDownloadMediumContent.querySelector(
+      ".medium-selection-wrapper",
+    );
+    const selectHome = mediumSelectionWrapper.querySelector("#home");
+    const selectProject = mediumSelectionWrapper.querySelector("#project");
+    const selectScratch = mediumSelectionWrapper.querySelector("#scratch");
+    const selectedMediumLabel = selectDownloadMedium.querySelector(
+      ".selected-static-medium",
+    );
+    const mediumDirectory = staticMediumWrapper.querySelector(
+      ".browse-medium-directory",
+    );
+    const backButton = staticMediumWrapper.querySelector(
+      ".download-directory-back-btn",
+    );
 
-        updateSelectionAmountBox(container, download_card_amount)
+    updateSelectionAmountBox(container, download_card_amount);
 
-        selectDownloadMedium.addEventListener("click", (event) => {
-            const isToggled = selectDownloadMedium.dataset.toggled === 'true';
-            if(isToggled){
-                selectDownloadMediumContent.style.display = "none"
-                arrow.classList.toggle("flipped")
-                selectDownloadMedium.dataset.toggled = 'false'
-            }else{
-                console.log("toggled")
-                arrow.classList.toggle("flipped")
-                selectDownloadMedium.dataset.toggled = 'true'
-                selectDownloadMediumContent.style.display = "block"
-                
-            }
-        });
+    selectDownloadMedium.addEventListener("click", (event) => {
+      const isToggled = selectDownloadMedium.dataset.toggled === "true";
+      if (isToggled) {
+        selectDownloadMediumContent.style.display = "none";
+        arrow.classList.toggle("flipped");
+        selectDownloadMedium.dataset.toggled = "false";
+      } else {
+        console.log("toggled");
+        arrow.classList.toggle("flipped");
+        selectDownloadMedium.dataset.toggled = "true";
+        selectDownloadMediumContent.style.display = "block";
+      }
+    });
 
-        selectHome.addEventListener("click", () => changeMedium("home", selectDownloadMedium ,selectedMediumLabel, mediumDirectory, downloadLocation))
-        selectProject.addEventListener("click", () => changeMedium("project", selectDownloadMedium ,selectedMediumLabel, mediumDirectory, downloadLocation))
-        selectScratch.addEventListener("click", () => changeMedium("scratch", selectDownloadMedium ,selectedMediumLabel, mediumDirectory, downloadLocation))
-        backButton.addEventListener("click", () =>{
-            const path = mediumDirectory.downloadPath;
-            const parts = path.split("/").filter(Boolean)
-            const root = parts[0]
-            parts.pop()
-            const newPath = parts.join("/")
-            if(mediumDirectory.dataset.currentMedium == root && parts.length < 1){
-                return;
-            }else{
-                
-                makeLocalDirectoryCards(mediumDirectory.dataset.currentMedium, newPath, mediumDirectory, selectedMediumLabel, downloadLocation)
-            }
-        })
-        closeBtn.addEventListener("click", () => closeSelector(fileSelectorOverlay));
-        downloadButton.addEventListener("click", () =>{
-
-            downloadFromPath(mediumDirectory.downloadPath, download_paths)
-            fileSelectorOverlay.style.display = "none"
-        })
-        fileSelectorOverlay.appendChild(fileSelector)
-        fileSelectorOverlay.classList.add("show");
-    
-
-
-    }catch(error){
-        console.log("error with", error)
-    }
+    selectHome.addEventListener("click", () =>
+      changeMedium(
+        "home",
+        selectDownloadMedium,
+        selectedMediumLabel,
+        mediumDirectory,
+        downloadLocation,
+      ),
+    );
+    selectProject.addEventListener("click", () =>
+      changeMedium(
+        "project",
+        selectDownloadMedium,
+        selectedMediumLabel,
+        mediumDirectory,
+        downloadLocation,
+      ),
+    );
+    selectScratch.addEventListener("click", () =>
+      changeMedium(
+        "scratch",
+        selectDownloadMedium,
+        selectedMediumLabel,
+        mediumDirectory,
+        downloadLocation,
+      ),
+    );
+    backButton.addEventListener("click", () => {
+      const path = mediumDirectory.downloadPath;
+      const parts = path.split("/").filter(Boolean);
+      const root = parts[0];
+      parts.pop();
+      const newPath = parts.join("/");
+      if (mediumDirectory.dataset.currentMedium == root && parts.length < 1) {
+        return;
+      } else {
+        makeLocalDirectoryCards(
+          mediumDirectory.dataset.currentMedium,
+          newPath,
+          mediumDirectory,
+          selectedMediumLabel,
+          downloadLocation,
+        );
+      }
+    });
+    closeBtn.addEventListener("click", () =>
+      closeSelector(fileSelectorOverlay),
+    );
+    downloadButton.addEventListener("click", () => {
+      downloadFromPath(mediumDirectory.downloadPath, download_paths);
+      closeSelector(fileSelectorOverlay);
+    });
+    fileSelectorOverlay.appendChild(fileSelector);
+    fileSelectorOverlay.classList.add("show");
+  } catch (error) {
+    console.log("error with", error);
+  }
 }
 
+async function makeLocalDirectoryCards(
+  root,
+  path = "",
+  browseLocalDirectoryContainer,
+  mediumLabel,
+  downloadLocationLabel,
+) {
+  browseLocalDirectoryContainer.downloadPath = path;
+  browseLocalDirectoryContainer.innerHTML = ``;
+  const textParts = path.split("/").filter(Boolean);
+  let firstPart = textParts[0] || "";
+  const downloadLocation = textParts[textParts.length - 1];
+  const lastPart = textParts.length > 1 ? textParts[textParts.length - 1] : "";
+  firstPart = firstPart.charAt(0).toUpperCase() + firstPart.slice(1);
+  const displayText = `${firstPart}/${lastPart}`;
+  mediumLabel.textContent = displayText;
+  downloadLocationLabel.textContent = `| Downloading in Folder: ${downloadLocation}`;
+  const folders = await fetchLocalDirectory(path);
+  folders.forEach((folder) => {
+    const newCard = document.createElement("div");
+    newCard.className = "local-directory-cards";
 
-async function makeLocalDirectoryCards(root, path="", browseLocalDirectoryContainer, mediumLabel, downloadLocationLabel){
-    browseLocalDirectoryContainer.downloadPath = path
-    browseLocalDirectoryContainer.innerHTML = ``
-    const textParts = path.split("/").filter(Boolean);
-    let firstPart = textParts[0] || "";
-    const downloadLocation = textParts[textParts.length-1]
-    const lastPart = textParts.length > 1 ? textParts[textParts.length - 1] : "";
-    firstPart = firstPart.charAt(0).toUpperCase() + firstPart.slice(1)
-    const displayText = `${firstPart}/${lastPart}`
-    mediumLabel.textContent = displayText
-    downloadLocationLabel.textContent = `| Downloading in Folder: ${downloadLocation}`
-    const folders = await fetchLocalDirectory(path);
-    folders.forEach(folder => {
-        const newCard = document.createElement("div");
-        newCard.className = "local-directory-cards"
-
-        browseLocalDirectoryContainer.appendChild(newCard)
-        newCard.innerHTML = `
+    browseLocalDirectoryContainer.appendChild(newCard);
+    newCard.innerHTML = `
             <span class="local-directory-cards-label">${folder}</span>
-        `
-        const newPath = `${path}/${folder}`
-        newCard.addEventListener("click", () => {
-            console.log(path)
-            makeLocalDirectoryCards(root, newPath, browseLocalDirectoryContainer, mediumLabel, downloadLocationLabel)
-        })
+        `;
+    const newPath = `${path}/${folder}`;
+    newCard.addEventListener("click", () => {
+      console.log(path);
+      makeLocalDirectoryCards(
+        root,
+        newPath,
+        browseLocalDirectoryContainer,
+        mediumLabel,
+        downloadLocationLabel,
+      );
+    });
+  });
+}
 
+async function fetchLocalDirectory(path) {
+  try {
+    const response = await fetch(
+      `${window.ROOT_PATH}/datasets/local-browse/list-root?medium=${path}`,
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP ERROR | STATUS CODE ${response.status}`);
+    }
+    paths = await response.json();
+    return paths;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function buildSnippets(snippetBox, dataset){
+  function changeSnippet(snippetId, copyDOM){
+    const snippetCodeBox = snippetBox.querySelector(".dataset-snippet-box")
+    snippetCodeBox.innerHTML = ``
+    Object.entries(snippetTemplates).forEach(([name, code]) => {
+      if(name == snippetId){
+        snippetCodeBox.innerHTML = code.replaceAll("{path}", dataset.path)
+        const codeElement = snippetCodeBox.querySelector("code")
+        const codeText = codeElement.textContent
+        copyDOM.dataset.copyData = codeText
+        hljs.highlightElement(codeElement)
+      }
+    })
+  }
+  const snippetHeader = snippetBox.querySelector(".dataset-snippet-header")
+  const snippetSelectorBox = snippetHeader.querySelector(".dataset-snippet-selector-box")
+  const snippetSelectorText = snippetSelectorBox.querySelector(".dataset-snippet-selector-text")
+  const snippetSelectorArrow = snippetSelectorBox.querySelector(".dataset-snippet-selector-arrow")
+  const snippetSelectorContent = snippetHeader.querySelector(".dataset-snippet-selector-content")
+  const snippetCopy = snippetBox.querySelector(".fa-copy")
+  snippetCopy.dataset.copyData = ""
+  snippetSelectorText.textContent = "None"
+  snippetSelectorContent.innerHTML =  /* html */`
+    <div class="snippet-selector-card" id="python-pfs">Python - PelicanFileSystem</div>
+    <div class="snippet-selector-card" id="python-osdf">Python - OSDFFileSystem</div>
+    <div class="snippet-selector-card" id="python-fsspec-pfs">Python - Fsspec - PelicanFileSystem</div>
+    <div class="snippet-selector-card" id="python-fsspec-osdf">Python - Fsspec - OSDFFileSystem</div>
+    <div class="snippet-selector-card" id="python-local-storage">Python - Local Storage</div>
+    <div class="snippet-selector-card" id="python-xarray-osdf">Python - xarray-OSDFFileSystem</div>
+    <div class="snippet-selector-card" id="python-xarray-map">Python - xarray - PelicanMap</div>
+    <div class="snippet-selector-card" id="python-pandas">Python - pandas</div>
+    <div class="snippet-selector-card" id="python-pytorch-list">Python - Pytorch List</div>
+    <div class="snippet-selector-card" id="python-pytorch-stream">Python - Pytorch Stream</div>
+    <div class="snippet-selector-card" id="pelican-cli">Pelican Command Line</div>
+  `
+  const snippetSelectors = snippetSelectorContent.querySelectorAll(".snippet-selector-card");
+  snippetSelectors.forEach((snippetSelector) => {
+    const id = snippetSelector.id;
+    const name = snippetSelector.textContent
+    snippetSelector.addEventListener("click", (event) =>{
+      snippetSelectorArrow.classList.toggle("flipped")
+      snippetSelectorBox.dataset.toggled === 'true'
+      snippetSelectorContent.classList.toggle("show")
+      snippetSelectorText.textContent = name
+      changeSnippet(id, snippetCopy)
 
     })
-}
+  })
+  snippetCopy.addEventListener("click", () =>{
+    navigator.clipboard.writeText(snippetCopy.dataset.copyData)
+  })
 
 
-async function fetchLocalDirectory(path){
-    try{
-        const response = await fetch(`${window.ROOT_PATH}/datasets/local-browse/list-root?medium=${path}`);
-        if(!response.ok){
-            throw new Error(`HTTP ERROR | STATUS CODE ${response.status}`)
-        }
-        paths = await response.json()
-        return paths
-    }catch (error){
-        console.log(error)
+  snippetSelectorBox.addEventListener("click", () =>{
+    const toggled = snippetSelectorBox.dataset.toggled === 'true'
+    if(toggled){
+      snippetSelectorArrow.classList.toggle("flipped")
+      snippetSelectorBox.dataset.toggled === 'false'
+      snippetSelectorContent.classList.toggle("show")
+      console.log("toggled on")
+    }else{
+      snippetSelectorArrow.classList.toggle("flipped")
+      snippetSelectorBox.dataset.toggled === 'true'
+      snippetSelectorContent.classList.toggle("show")
     }
+  })
+}
+/**
+ * just reads DOM window refresh and calls functions that need to be generates at start of window
+ */
+function main() {
+  document.addEventListener("DOMContentLoaded", (event) => {
+    fetchDatasets();
+  });
 }
 
-
+async function downloadFromPath(file, paths) {
+  const parts = file.split("/");
+  const root = parts[0];
+  const resolved_root = rootPaths[root];
+  parts[0] = resolved_root;
+  const fullPath = parts.join("/");
+  console.log(paths);
+  paths.forEach((type, path) => {
+    try {
+      fetch(
+        `${window.ROOT_PATH}/datasets/download?storageLocation=${fullPath}&filepath=${path}`,
+      );
+      console.log(`downloaded ${path} at ${file}`);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+}
 
 /**
- * 
- * just reads DOM window refresh and calls functions that need to be generates at start of window
- * 
+ * Just a basic function to set to a decimal place
+ * @param {int} number
+ * @param {int} digits
  */
-function main(){
-    document.addEventListener("DOMContentLoaded", (event) => {
-        fetchDatasets();
-    })
-}
 
-async function downloadFromPath(file, paths){
-    const parts = file.split("/")
-    const root = parts[0]
-    const resolved_root = rootPaths[root]
-    parts[0] = resolved_root
-    const fullPath = parts.join("/")
-    console.log(paths)
-    paths.forEach((type, path) => {
-        try{
-            fetch(`${window.ROOT_PATH}/datasets/download?storageLocation=${fullPath}&filepath=${path}`)
-            console.log(`downloaded ${path} at ${file}`)
-        }catch(error){
-            console.log(error)
-        }
-
-
-    })
-
-}
 function truncateDecimals(number, digits) {
   const multiplier = Math.pow(10, digits);
   return Math.trunc(number * multiplier) / multiplier;

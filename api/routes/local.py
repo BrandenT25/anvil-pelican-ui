@@ -2,7 +2,7 @@ from fastapi import APIRouter
 import os
 
 USER = os.environ.get("USER")
-PROJECT_ALLOCATIONS_RAW = os.environ.get("PROJECT")
+PROJECT_ALLOCATIONS_RAW = os.environ.get("PROJECT", "")
 PROJECT_ALLOCATIONS = PROJECT_ALLOCATIONS_RAW.split(",")
 PROJECT_PATHS = []
 
