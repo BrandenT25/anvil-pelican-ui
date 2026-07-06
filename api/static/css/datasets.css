@@ -302,27 +302,31 @@
     margin: 100px auto;
     padding: 10px;
     border-radius: 10px;
-    position: fixed;
+    position: relative;
 }
 .download-file-selector-close-btn{
-  position: absolute;
-  right: 0px;
-  top: 8px;
-  font-size: 24px;
-  height:50px;
-  width:50px;
-  display:flex;
-  align-items: center;
-  font-size:25px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: white;
+    margin-left: auto;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: white;
+  
 }
+
 .select-static-mediums{
-    width:70%;
+    white-space: nowrap;
+    display:block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 70%;
     position:absolute;
-    height:40px;
+    min-height:40px;
     left:50%;
     margin-left: -35%;
     top:10%;
@@ -411,10 +415,69 @@ position: absolute;
 .browse-medium-directory{
     display:flex;
     width:auto;
-    height:250px;
+    height:220px;
     margin-left:30px;
     margin-right:30px;
     margin-top:100px;
     background-color: #121212;
+    overflow-y: auto;
+    flex-direction: column;
+    gap:5px;
+}
+.local-directory-cards{
+    background-color:#2a2a2a;
+    width:100%;
+    height:30px;
+    color:white;
+    cursor: pointer;
+}
+.download-directory-back-btn {
+    position: absolute;
+    top:58px;
+    left:50px;
+    width: 20px;
+    height: 2px;
+    background: white; 
+    display: inline-block;
+    cursor: pointer;
+}
 
+.download-directory-back-btn::before {
+    content: "";
+    left:200px;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-left: 2px solid white;
+    border-bottom: 2px solid white;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.directory-download-container{
+    width:100%;
+    height:50px;
+    display:flex;
+    color:white;
+    align-content: center;
+    align-items: center;
+    gap:10px;
+    font-family: Poppins, sans-serif;
+    font-size: 15px;
+    margin-top: 10px;
+}
+
+.directory-download-container-amount{
+    color:white;
+    align-content: center;
+}
+.directory-download-button{
+    height:auto;
+    width:auto;
+    align-content: center;
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    padding:5px;
+    cursor:pointer;
 }

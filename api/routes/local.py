@@ -23,21 +23,35 @@ NOISE_PREFIXES = ("interlink")
 localRouter = APIRouter()
 
 
-@localRouter.get("/datasets/local-browse/list")
+@localRouter.get("/datasets/local-browse/list-root")
 def browseStorageMedium(medium: str):
     result = []
-    print(MEDIUMS)
-    if medium == "project":
-        for dir in MEDIUMS["project"]:
-            print(dir)
-            list = [f for f in os.listdir(dir) if os.path.isdir(os.path.join(dir, f))]
-            list = [f for f in list if not f.startswith('.')] 
-            list = [f for f in list if not f.startswith(NOISE_PREFIXES)]
-            result.extend(list)
-        return result
+    pathParts = medium.split("/")
+    if pathParts[0] == "project":
+        allocation = None
+        if len(pathParts) >= 2:
+            allocation = pathParts[1]
+            path = f"/anvil/projects/{allocation}/"
+            for part in pathParts[2:]:
+                path += f"{part}/"
+            list = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f)) and not f.startswith(NOISE_PREFIXES)]
+            list = [f for f in list if not f.startswith('.')]
+            print(list) 
+            return list
+        else:
+            for dir in MEDIUMS["project"]:
+                result.append(os.path.basename(dir))
+            return result
     else:
-        list = [f for f in os.listdir(MEDIUMS[medium]) if os.path.isdir(os.path.join(MEDIUMS[medium], f))]
+        root = MEDIUMS[pathParts[0]]
+        path = f"{root}/"
+        if len(pathParts) > 1:
+            pathParts = medium.split("/")
+            for part in pathParts[1:]:
+                path += f"{part}/"
+        list = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
         list = [f for f in list if not f.startswith('.')]
+        print(list)
         return list
 
 

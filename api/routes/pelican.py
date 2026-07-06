@@ -3,7 +3,7 @@ from pelicanfs import OSDFFileSystem
 import fsspec, os, json, shutil
 from pathlib import Path
 from collections import defaultdict
-osdf = OSDFFileSystem(direct_reads=True)
+osdf = OSDFFileSystem(direct_reads=False)
 
 pelicanRouter = APIRouter()
 ROOTPATH = Path.cwd()
@@ -17,12 +17,18 @@ def pelicanlistPath(path: str):
     paths = osdf.ls(path)
     return paths
 
-@pelicanRouter.get("/datasets/download/")
+@pelicanRouter.get("/datasets/download")
 def pelicanDownloadObject(storageLocation:str, filepath):
-    if storageLocation == "scratch":
-        print(osdf.info(filepath))
-        osdf.get(filepath, SCRATCH_PATH, recursive=True)
-        print(f"{filepath} downloaded at {storageLocation}")
+    
+
+    entries = osdf.ls(filepath, detail=True)
+    for entry in entries:
+        print(entry["name"], entry["type"], entry["size"])
+    path = filepath.rstrip("/")
+
+    osdf.get(path, storageLocation, recursive=True)
+
+
 
 @pelicanRouter.get("datasets/")
 def giveSize():
