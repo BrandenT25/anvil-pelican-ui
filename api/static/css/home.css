@@ -7,6 +7,11 @@ a {
   text-decoration: none;
   color: inherit;
 }
+@media (max-width: 1400px) {
+    html {
+        font-size: 70.5%;
+    }
+}
 .home-navbar{
     display:flex;
     width:100%;
@@ -36,17 +41,20 @@ a {
 }
 .navbar-logo{
 }
-.navbar-links{
-    display: flex;
-    gap: 7rem;  
-    list-style:None;
-    margin-left: 3rem;
+.navbar-links {
+  display: flex;
+  gap: 7rem;
+  list-style: None;
+  margin-right: 1rem;
+  margin-left:1rem;
 }
-.navbar-link{
-    color: white;
-    font-size: clamp(1.40625rem, 0.8203rem + 1.875vw, 1.875rem);
-    font-family: Poppins, sans-serif;
-    text-decoration: none;
+.navbar-link {
+  color: white;
+  font-size: 1.875rem;
+  font-family: Poppins, sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+
 }
 .navbar-purdue-logo{
     margin-left:auto;

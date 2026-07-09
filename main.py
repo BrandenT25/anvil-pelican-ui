@@ -30,7 +30,7 @@ async def main_page(request: Request):
 
 @app.get('/quick-access', response_class=HTMLResponse)
 async def main_page(request: Request):
-    return templates.TemplateResponse(request, "quick-access.html", {"ROOT_URL": request.scope.get('root_path', '')})
+    return templates.TemplateResponse(request, "quick-access.html", {"ROOT_URL": request.scope.get('root_path', ''),  "USER": USER})
 
 @app.get('/about', response_class=HTMLResponse)
 async def main_page(request: Request):

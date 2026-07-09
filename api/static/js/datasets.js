@@ -184,15 +184,21 @@ function addDatasetCard(dataset) {
                             <span class="file-browser-download-button-text">Select Folder</span>
                         </div>
                         <div class="file-browser-download-amount"></div>
-                        <div class="file-browser-download-clear"></div>
+                        <div class="file-browser-download-clear">
+                          <span class="file-browser-download-clear-text">Clear</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+              </div>
         `;
-
+    
     const file_container = newCard.querySelector(
       ".file-browser-directory-container",
     );
+    file_container.downloadSize = 0;
+    const downloadContainer = newCard.querySelector(".file-browser-download-container")
+    const downloadAmount = downloadContainer.querySelector(".file-browser-download-amount")
+    const clearButton = downloadContainer.querySelector(".file-browser-download-clear")
     const breadcrumbs = newCard.querySelector(".file-browser-breadcrumbs");
     const download_card = newCard.querySelector(
       ".file-browser-download-amount",
@@ -210,6 +216,7 @@ function addDatasetCard(dataset) {
       download_file(file_container, file_container.downloadPaths);
     });
 
+    
     header.addEventListener("click", (event) => {
       const drop_down = newCard.querySelector(".dataset-card-content");
       const isToggled = newCard.dataset.toggled === "true";
@@ -223,6 +230,7 @@ function addDatasetCard(dataset) {
         newCard.dataset.toggled = "true";
         arrow.classList.toggle("flipped");
         if (drop_down.isLoaded !== true) {
+
           loadDirectory(
             dataset["path"],
             file_container,
@@ -233,7 +241,21 @@ function addDatasetCard(dataset) {
         }
       }
     });
+    
     buildSnippets(snippets,dataset)
+    
+    clearButton.addEventListener("click", ()=>{
+      file_container.downloadPaths.clear()
+      updateSelectionAmountBox(file_container, downloadAmount)
+      file_container.downloadSize = 0
+      loadDirectory(
+            file_container.currentPath,
+            file_container,
+            breadcrumbs,
+            download_card,
+          ); 
+    })
+          
     container.appendChild(newCard);
   } catch (error) {
     console.log("adding dataset failed with ", error);
@@ -254,7 +276,7 @@ function loadDirectory(path, container, breadcrumbs, download_card) {
   if (!container.basePath) {
     container.basePath = path;
   }
-
+  
   container.innerHTML = "";
   breadcrumbs.innerHTML = "";
 
@@ -271,49 +293,65 @@ function loadDirectory(path, container, breadcrumbs, download_card) {
  * @param {HTMLElement} breadcrumbs
  * @returns {Promise<void>}
  */
+
 async function makeFolderCards(path, container, download_card, breadcrumbs) {
   const paths = await retrieveDirectoryPaths(path);
+  
   paths.forEach((folder_path) => {
     const cleanedPath = folder_path.name.replace(/\/$/, "");
     const name = cleanedPath.split("/").pop();
     const newCard = document.createElement("div");
     let imageFile;
     let fileSize;
-
+    let fileSizeType;
+    let fileBytes = 0
     if (folder_path["type"] === "directory") {
       imageFile = "folder-icon.png";
+      fileSizeType = ""
+      console.log(folder_path)
+      fileSize = ""
     } else {
+      fileBytes = folder_path["size"];
       fileSize = folder_path["size"];
       if (fileSize > 1000000000) {
         fileSize = fileSize / 1000000000;
+        fileSize = truncateDecimals(fileSize, 1);
+        fileSizeType = "Gb"
       } else if (fileSize > 1000000) {
         fileSize = fileSize / 1000000;
+        fileSizeType = "Mb"
         fileSize = truncateDecimals(fileSize, 1);
         console.log(fileSize, "MB");
       } else if (fileSize > 1000) {
         fileSize = fileSize / 1000;
+        fileSize = truncateDecimals(fileSize, 1);
+        fileSizeType = "Kb"
       }
       imageFile = "file-icon.png";
     }
 
     newCard.className = "file-browser-directory-folder";
     newCard.dataset.path = folder_path.name;
-
+    
     newCard.innerHTML = `
         <label class="folder-checkbox-wrapper">
             <input type="checkbox" class="folder-checkbox"></input>
             <span class="folder-checkbox-custom"></span>
         </label>
-        <img src="${window.ROOT_PATH}/api/static/img/${imageFile}" alt="folder-icon" height="20"></img>
-        <div class="folder-name-box">
-            ${name} 
+        <div class="icon-size-stack">
+          <img src="${window.ROOT_PATH}/api/static/img/${imageFile}" alt="folder-icon" height="20"></img>
+          ${folder_path["type"] === "directory" ? "" : `<div class="file-size-box">${fileSize}${fileSizeType}</div>`}
+        </div>
+        <div class="folder-info-stack">
+          <div class="folder-name-box" title="${name}">
+              ${name} 
+          </div>
+          
         </div>
         `;
 
     const checkBox = newCard.querySelector(".folder-checkbox");
-    const clearBox = download_card.querySelector(
-      ".file-browser-download-clear",
-    );
+
     const fullPath = folder_path.name;
     const isDirectlySelected = container.downloadPaths.has(fullPath);
     const folderName = newCard.querySelector(".folder-name-box");
@@ -333,9 +371,11 @@ async function makeFolderCards(path, container, download_card, breadcrumbs) {
     checkBox.addEventListener("change", (event) => {
       if (event.target.checked) {
         container.downloadPaths.set(folder_path.name, folder_path.type);
+        container.downloadSize += fileBytes;
         updateSelectionAmountBox(container, download_card);
       } else {
         container.downloadPaths.delete(folder_path.name);
+        container.downloadSize -= fileBytes;
         updateSelectionAmountBox(container, download_card);
       }
     });
@@ -347,7 +387,8 @@ async function makeFolderCards(path, container, download_card, breadcrumbs) {
       });
     }
     container.appendChild(newCard);
-  });
+  })
+    
 }
 
 /**
@@ -378,13 +419,31 @@ async function retrieveDirectoryPaths(path) {
  */
 function updateSelectionAmountBox(container, download_card) {
   container.downloadAmount = container.downloadPaths.size;
-  if (container.downloadAmount === 1) {
+  let fileSize = container.downloadSize
+  let fileSizeType = ""
+  if (fileSize > 1000000000) {
+    fileSize = fileSize / 1000000000;
+    fileSize = truncateDecimals(fileSize, 1);
+    fileSizeType = "Gb"
+  } else if (fileSize > 1000000) {
+    fileSize = fileSize / 1000000;
+    fileSizeType = "Mb"
+    fileSize = truncateDecimals(fileSize, 1);
+    console.log(fileSize, "MB");
+  } else if (fileSize > 1000) {
+    fileSize = fileSize / 1000;
+    fileSize = truncateDecimals(fileSize, 1);
+    fileSizeType = "Kb"
+  }
+  if (container.downloadAmount === 0){
+    download_card.innerHTML = ``
+  } else if (container.downloadAmount === 1) {
     download_card.innerHTML = `
-        <span>${container.downloadAmount} item selected</span>
+        <span>${container.downloadAmount} item selected | ${fileSize}${fileSizeType}</span>
     `;
   } else {
     download_card.innerHTML = `
-        <span>${container.downloadAmount} items selected</span>
+        <span>${container.downloadAmount} items selected | ${fileSize}${fileSizeType}</span>
     `;
   }
 }
@@ -466,13 +525,7 @@ function download_file(container, download_paths) {
     function closeSelector(fileSelectorOverlay) {
       fileSelectorOverlay.classList.remove("show");
     }
-    function changeMedium(
-      medium,
-      selectDownloadMedium,
-      selectedMediumLabel,
-      selectedMedium,
-      downloadLocationLabel,
-    ) {
+    function changeMedium(medium, selectDownloadMedium, selectedMediumLabel, selectedMedium, downloadLocationLabel,){
       selectedMedium.dataset.currentMedium = medium;
       makeLocalDirectoryCards(
         selectedMedium.dataset.currentMedium,
@@ -514,7 +567,6 @@ function download_file(container, download_paths) {
                     <div class="directory-download-button"><span>Download</span></div>
                     <div class="directory-download-container-amount"></div>
                     <div class="directory-download-container-location"></div>
-                    <span> | 8Gb </span>
                 
                 </div>
             </div>
@@ -638,13 +690,7 @@ function download_file(container, download_paths) {
   }
 }
 
-async function makeLocalDirectoryCards(
-  root,
-  path = "",
-  browseLocalDirectoryContainer,
-  mediumLabel,
-  downloadLocationLabel,
-) {
+async function makeLocalDirectoryCards(root, path = "", browseLocalDirectoryContainer, mediumLabel, downloadLocationLabel){
   browseLocalDirectoryContainer.downloadPath = path;
   browseLocalDirectoryContainer.innerHTML = ``;
   const textParts = path.split("/").filter(Boolean);
@@ -654,7 +700,7 @@ async function makeLocalDirectoryCards(
   firstPart = firstPart.charAt(0).toUpperCase() + firstPart.slice(1);
   const displayText = `${firstPart}/${lastPart}`;
   mediumLabel.textContent = displayText;
-  downloadLocationLabel.textContent = `| Downloading in Folder: ${downloadLocation}`;
+  downloadLocationLabel.textContent = `Downloading in Folder: ${downloadLocation}`;
   const folders = await fetchLocalDirectory(path);
   folders.forEach((folder) => {
     const newCard = document.createElement("div");

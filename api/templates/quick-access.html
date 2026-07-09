@@ -3,10 +3,14 @@
   <head>
     <title>This is the title of the webpage!</title>
     <script>window.ROOT_PATH = "{{ROOT_URL}}" </script>
+    <script>window.USER = "{{USER}}"</script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-
+    <script src="{{ROOT_URL}}/api/static/js/quick-access.js" defer></script>
     <link rel="stylesheet" href="{{ROOT_URL}}/api/static/css/quick-access.css">
   </head>
   <body>
@@ -28,6 +32,43 @@
         </div>
     </div>
 
+    </div>
+
+    <div class="download-file-selector-overlay">
+    </div>
+    <div class="quick-access-container">
+        <div class="quick-access-title">
+            <span class="quick-access-title-header-text">Quick Access</span>
+            <span class="quick-access-title-description-text">Paste an Endpoint to browse, download, or stream</span>
+        </div>
+        <div class="quick-access-input-wrapper">
+            <input type="text" class="quick-access-input" placeholder="/aws-opendata/us-east-1/noaa-goes17/" />
+            <button class="quick-access-submit">Load</button>
+        </div>
+        <div class="quick-access-error" style="display:none;"></div>
+        <div class="quick-access-content">
+            <div class="quick-access-snippet-wrapper"></div>
+            <div class="quick-access-browse-wrapper">
+                <div class="file-browser-header">
+                    <div class="dataset-snippet-header-text-box">
+                    <h1>Browse</h1>
+                    </div>
+                    <div class ="dataset-snippet-header-split"></div>
+                    <div class="file-browser-breadcrumbs"></div>
+                </div>
+            <div class="file-browser-directory-container"></div>
+                <div class="file-browser-download-container">
+                    <div class="file-browser-download-button">
+                        <span class="file-browser-download-button-text">Select Folder</span>
+                    </div>
+                    <div class="file-browser-download-amount"></div>
+                    <div class="file-browser-download-clear">
+                        <span class="file-browser-download-clear-text">Clear</span>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
     </div>
   </body>
 </html>

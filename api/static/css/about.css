@@ -33,17 +33,20 @@
 }
 .navbar-logo{
 }
-.navbar-links{
-    display: flex;
-    gap: 7rem;  
-    list-style:None;
-    margin-left: 3rem;
+.navbar-links {
+  display: flex;
+  gap: 7rem;
+  list-style: None;
+  margin-right: 1rem;
+  margin-left:1rem;
 }
-.navbar-link{
-    color: white;
-    font-size:30px;
-    font-family: Poppins, sans-serif;
-    text-decoration: none;
+.navbar-link {
+  color: white;
+  font-size: 1.875rem;
+  font-family: Poppins, sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+
 }
 .navbar-purdue-logo{
     margin-left:auto;
