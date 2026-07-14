@@ -33,3 +33,6 @@ log/
 data/*.nc
 data/*.root
 data/scratch/
+
+.claude/
+.playwright-mcp/
