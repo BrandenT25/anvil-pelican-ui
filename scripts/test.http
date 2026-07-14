@@ -1,0 +1,12 @@
+POST http://localhost:8000/admin/modify-dataset?dataset_id=1
+Content-Type: application/json
+
+{
+    "name": "test",
+    "description": "test",
+    "path": "/aws-opendata/test2",
+    "format": "netcdf",
+    "streamable": true,
+    "access": "public",
+    "tags": ["earth-climate", "test"]
+}

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 import os
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -6,6 +6,9 @@ from fastapi.templating import Jinja2Templates
 from api.routes.dataset import datasetRouter
 from api.routes.pelican import pelicanRouter
 from api.routes.local import localRouter
+from api.routes.database import dbRouter
+
+from api.auth import is_authorized
 
 USER = os.environ.get("USER")
 
@@ -14,6 +17,8 @@ app = FastAPI()
 app.include_router(datasetRouter)
 app.include_router(pelicanRouter)
 app.include_router(localRouter)
+app.include_router(dbRouter)
+
 app.mount("/api/static", StaticFiles(directory="api/static"), name="static")
 templates = Jinja2Templates(directory="api/templates")
 
@@ -39,3 +44,9 @@ async def main_page(request: Request):
 @app.get('/datasets/category/{category}')
 async def category_page(category, request: Request):
     return templates.TemplateResponse(request, "datasets.html", {"ROOT_URL": request.scope.get('root_path', ''), "CATEGORY": category, "USER": USER})
+
+@app.get('/admin', response_class=HTMLResponse)
+async def admin_page(request: Request):
+    if not is_authorized(USER):
+        raise HTTPException(status_code=403, detail="Not Authorized")
+    return templates.TemplateResponse(request, "admin.html", {"ROOT_URL": request.scope.get('root_path', ''),  "USER": USER}) 

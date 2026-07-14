@@ -1,0 +1,451 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Poppins, sans-serif;
+}
+@media (max-width: 1400px) {
+    html {
+        font-size: 90%;
+    }
+}
+/* #region navbar */
+:root {
+  --primary-font:Poppins, sans-serif;
+}
+.modal-overlay{
+  display: none;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+
+}
+.modal-overlay.show{
+    display:flex;
+}
+
+.home-navbar{
+    display:flex;
+    width:100%;
+    height:100px;
+    position:fixed;
+    top:0;
+    background-color: black;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    z-index: 1000;
+}
+.home-navbar-left{
+    background-color:black;
+    flex: 1.5;
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    border-radius: 10px;
+    gap: 5rem;
+}
+.home-navbar-right{
+    background-color:#cfb991;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+}
+.navbar-logo{
+}
+.navbar-links {
+  display: flex;
+  gap: 7rem;
+  list-style: None;
+  margin-right: 1rem;
+  margin-left:1rem;
+}
+.navbar-link {
+  color: white;
+  font-size: 1.875rem;
+  font-family: Poppins, sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+
+}
+.navbar-purdue-logo{
+    margin-left:auto;
+}
+/* #endregion */
+
+.admin-container{
+    background-color: #0a0a0a;
+    min-height: 100vh;
+    width:100%;
+    display:flex;
+    flex-direction: column;
+}
+.header-container{
+    height:100px;
+    width:100%;
+    margin-top:100px;
+    color:white;
+    align-content: center;
+    justify-content: center;
+    text-align: center;
+    font-size:65px;
+    font-weight: 700;
+}
+.selection-boxes-container{
+    display:flex;
+    width:100%;
+    height:50px;
+    align-items: center;
+    gap:20px;
+    padding-left:800px;
+    padding-right:800px;
+}
+.selection-box{
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    height:100%;
+    width:auto;
+    flex:1;
+    text-align: center;
+    color:white;
+    align-content: center;
+    font-size: 25px;
+    cursor: pointer;
+}
+.selection-box:hover {
+    background-color: #242424;
+    border-color: #555;
+}
+
+.selection-box:active {
+    transform: scale(0.98);
+}
+.selection-box.active {
+    background-color: #333;
+}
+.searchbar-wrapper{
+    height:75px;
+    width:100%;
+    align-items: center; 
+    justify-content: center;
+    display:flex;
+    align-content: center;
+    padding-left:800px;
+    padding-right:800px;
+}
+.admin-search-input{
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #f5f5f5;
+    height:42px;
+    width:100%;
+    padding-left:10px;
+    font-size:20px;
+
+
+}
+.admin-search-input::placeholder {
+    color: #666;
+}
+.admin-search-input:focus {
+    outline: none;
+    border-color:teal
+}
+.category-wrapper,
+.user-authorization-wrapper,
+.dataset-wrapper{
+    display:none;
+    flex-direction: column;
+    align-items: center;
+}
+
+.dataset-wrapper.show,
+.category-wrapper.show,
+.user-authorization-wrapper.show{
+    display:flex;
+}
+.card-wrapper{
+    display:flex;
+    gap:10px;
+    width:1500px;
+    height: 860px;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding:10px 10px 10px 10px;
+    flex-direction: column;
+    overflow-y: auto;
+}
+.card{
+    display:flex;
+    flex-shrink:0;
+    width:100%;
+    height:75px;
+    background-color: #0a0a0a;
+    border: 2px solid #333;
+    border-radius: 10px;
+    cursor:pointer;
+
+}
+
+.card:hover {
+    background-color: #141414;
+    border-color: #555;
+}
+#add-card{
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+
+}
+.add-card-plus{
+    color:white;
+    font-size: 70px;
+    line-height: 1;
+    position:relative;
+    bottom:0px;
+    margin-left:10px;
+}
+.add-card-text{
+    color:white;
+    font-size: 30px;
+    line-height: 1;
+    position:relative;
+    margin-left:10px;
+}
+.datasetName{
+    color:white;
+    padding-left:10px;
+    font-size: 30px;
+
+}
+.datasetDescription{
+    color:gray;
+    padding-left:10px;
+    font-size:15px;
+}
+.text-wrapper{
+    display:flex;
+    flex-direction: column;
+}
+.modify-wrapper{
+    display: flex;
+    flex-direction: row;
+    color:white;
+    font-size: 30px;
+    margin-left: auto;
+    padding-right:20px;
+    padding-top:20px;
+    gap: 1rem;
+}
+
+.add-dataset-modal{
+    background-color: #1a1a1a;
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+    max-width: 500px;
+    min-height: 400px;
+    height: 800px;
+    padding: 10px;
+    border-radius: 10px;
+
+}
+.add-dataset-close-btn{
+    margin-left: auto;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: white;
+}
+.add-dataset-header-wrapper{
+    height:70px;
+    width:100%;
+    display:flex;
+
+    color:white;
+    font-size: 40px;
+    justify-content: center;
+    align-items: flex-end;
+
+    font-family: Poppins, sans-serif;
+}
+.add-dataset-inputs-wrapper{
+    width:100%;
+    height:100%;
+    padding:30px;
+    display:flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+.header-split{
+    height:2px;
+    border-radius: 20px;
+    width:100%;
+    background-color: white;
+}
+
+.form-field{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+}
+.form-field label{
+    color: white;
+    font-size: 14px;
+    font-family: Poppins, sans-serif;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea{
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 16px;
+    font-family: Poppins, sans-serif;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: white;
+    box-sizing: border-box;
+}
+
+.form-field textarea{
+    resize: vertical;
+    min-height: 60px;
+}
+.form-field.checkbox-field{
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-field.checkbox-field input{
+    width: auto;
+}
+
+.category-checklist{
+    display: flex;
+    flex-direction: column;
+    max-height: 160px;
+    overflow-y: auto;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.category-row{
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid #3a3a3a;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.category-row:last-child{
+    border-bottom: none;
+}
+
+.category-row:hover{
+    background-color: #3a3a3a;
+}
+
+.category-row input[type="checkbox"]{
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    margin: 0 10px 0 0;
+}
+
+.category-row span{
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: white;
+    font-size: 15px;
+    font-family: Poppins, sans-serif;
+    text-align: left;
+}
+.submit-btn-wrapper{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 10px;
+}
+
+.submit-btn{
+    padding: 12px 36px;
+    background-color: white;
+    color: black;
+    border: none;
+    border-radius: 6px;
+    font-size: 18px;
+    font-family: Poppins, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.3px;
+}
+
+.submit-btn:hover{
+    background-color: #e0e0e0;
+}
+
+.submit-btn:active{
+    background-color: #cfcfcf;
+    transform: scale(0.97);
+}
+.add-user-modal{
+    width: 360px;
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+}
+
+.add-user-header-wrapper{
+    height: 60px;
+    width: 100%;
+    color: white;
+    font-size: 28px;
+    font-family: Poppins, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-user-inputs-wrapper{
+    width: 100%;
+    padding: 10px 0 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-sizing: border-box;
+}

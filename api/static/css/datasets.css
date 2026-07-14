@@ -10,7 +10,9 @@
         font-size: 70.5%;
     }
 }
-
+:root {
+  --primary-font: font-family: Poppins, sans-serif;
+}
 /* 
 Need to adjust width and text fonts using clamp
 go through and set clamp numbers accordingly
