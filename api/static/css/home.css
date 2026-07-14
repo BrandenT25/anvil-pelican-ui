@@ -2,6 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: Poppins, "Segoe UI", sans-serif;
 }
 a {
   text-decoration: none;
@@ -12,6 +13,13 @@ a {
         font-size: 70.5%;
     }
 }
+body {
+  background-color: #0a0a0a;
+  color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* #region Navbar (shared pattern — keep in sync with other pages' CSS) */
 .home-navbar{
     display:flex;
     width:100%;
@@ -59,172 +67,216 @@ a {
 .navbar-purdue-logo{
     margin-left:auto;
 }
-.page-columns{
-    margin-top: 9rem;
-    display:flex;
-    gap:2rem;
-    height: 50rem;
+/* #endregion */
 
-}
-.left-column{
-    flex:2;
-    margin-left:5rem;
-    height: auto;
-    min-height: unset; /* remove if present */
-    overflow: visible;
-}
-.right-column{
-    background-color: black;
-    flex:1;
-    margin-right:5rem;
+/* #region Page layout */
+.page-columns {
     display: flex;
-    border-radius: 10px;
-    height: 60rem;
+    align-items: flex-start;
+    gap: clamp(2rem, 0.5rem + 3vw, 4rem);
+    max-width: 120rem;
+    margin: 0 auto;
+    padding: 10rem clamp(2rem, 1vw + 1.5rem, 5rem) 4rem;
+    min-width: 0;
 }
-.header-container{
-    background-color: white;
-    margin-top: 0rem;
-    height:10rem;
-    height: auto;
-    min-height: unset;
-    overflow: visible;
+.left-column {
+    flex: 2;
+    min-width: 0;
 }
-.cta-card-container{
-    background-color:white;
+.right-column {
+    flex: 1;
+    min-width: 0;
+}
+@media (max-width: 900px) {
+    .page-columns {
+        flex-direction: column;
+    }
+    .right-column {
+        width: 100%;
+    }
+    .cta-card {
+        gap: 1.25rem;
+        padding: 1.5rem;
+    }
+    .cta-card-icon {
+        width: 4rem;
+        height: 4rem;
+    }
+    .cta-card-icon img {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}
+/* #endregion */
+
+/* #region Hero */
+.hero {
+    margin-top: 1rem;
+    min-width: 0;
+}
+.hero-title {
+    font-size: clamp(2.1875rem, 1.0156rem + 3.75vw, 3.125rem);
+    font-weight: 600;
+    line-height: 1.2;
+    color: #f5f5f5;
+}
+.hero-accent {
+    color: #cfb991;
+}
+.hero-subtitle {
     display: flex;
-    flex-direction: column;
-    height:100%;
-    gap: 5rem;
-    margin-top:3rem;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin: 1.5rem 0 0 0.5rem;
+    min-width: 0;
 }
-.cta-card{
-    width:100%;
-    background-color: #cfb991;
-    border-radius: 10px;
-    height: auto;
-    min-height: unset; /* remove if present */
-    overflow: visible;
-    padding:1rem;
-
+.hero-subtitle-icon {
+    flex-shrink: 0;
+    font-size: clamp(1.75rem, 0.8125rem + 3vw, 2.5rem);
+    color: #cfb991;
+    line-height: 1;
 }
-.header{
-    background-color:white;
-    margin-top: 2rem;
-    width:100%;
-    height: auto;
-    min-height: unset; /* remove if present */
-    overflow: visible;
-}
-.header-text{
-    font-family: Poppins, sans-serif;
-    font-size: clamp(2.1875rem, 1.0156rem + 3.75vw, 3.125rem);
-}
-.header-description{
-    height:3rem;
-    margin-left:1rem;
-    display:flex;
-    
-}
-.header-description-text{
-    font-family: Poppins, sans-serif;
-    font-size: clamp(0.875rem, 0.4063rem + 1.5vw, 1.25rem);
-    margin-top:10px;
-
-}
-.cta-card-header{
-    display:flex;
-    margin:1rem;
-    margin-left:3rem;
-    height:7rem;
-    align-items:center;
-    gap:3rem;
-}
-.cta-card-description{
-    margin:2rem;
-    margin-top:0;
-
-}
-.cta-card-header-text{
-    top:50%;
-    text-decoration: none;
-    font-family: Poppins, sans-serif;
-    color:black;
-    font-size: clamp(2.1875rem, 1.0156rem + 3.75vw, 3.125rem);
-
-}
-.cta-card-description-text{
-    text-decoration: none;
-    font-family: Poppins, sans-serif;
+.hero-subtitle-text {
     font-size: clamp(1.09375rem, 0.5078rem + 1.875vw, 1.5625rem);
-    color:black;
-    
+    color: #aaa;
+    min-width: 0;
 }
-.cta-card-container a {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-}
-.datasets{
-    background-color: white;
-    margin:3rem;
-    flex:1;
-    display:flex;
-    flex-direction: column;
-}
-.datasets-header{
-    background-color: black;
-    flex:.2;
-}
-.category-container{
-    background-color: black;
-    display:flex;
-    flex:1;
-    gap:3rem;
-    padding-top:2rem;
-    flex-direction:column;
+/* #endregion */
 
+/* #region CTA cards */
+.cta-card-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: 4rem;
+    min-width: 0;
 }
-.category-card{
-    background-color: black;
-    height:7rem;
-    width:100%;
+.cta-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: 2rem;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    min-width: 0;
+    transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+.cta-card:hover {
+    border-color: #cfb991;
+    background-color: #202020;
+    transform: translateY(-2px);
+}
+.cta-card-icon {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
-    flex-direction: row;
-    gap:1rem;
-
+    justify-content: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 10px;
+    background-color: #cfb991;
 }
-.category-card-icon{
-
+.cta-card-icon img {
+    width: 3.5rem;
+    height: 3.5rem;
+    object-fit: contain;
 }
-.category-card-connector{
-    background-color: white;
-    height:7px;
-    width:3rem;
-    border-radius:10px;
+.cta-card-body {
+    min-width: 0;
 }
-.category-card-text-container{
-    color: white;
-    font-family: Poppins, sans-serif;
-
-}
-.datasets-header-title{
-    color:white;
-}
-.datasets-header-description{
-    color:white;
+.cta-card-title {
     display: flex;
-    padding-left:1rem;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: clamp(1.53125rem, 0.7109rem + 2.625vw, 2.1875rem);
+    font-weight: 600;
+    color: #f5f5f5;
+    min-width: 0;
 }
-.datasets-header-title-text{
-    color:white;
-    font-size: clamp(2.1875rem, 1.0156rem + 3.75vw, 3.125rem);
-    font-family: Poppins, sans-serif;
+.cta-card-arrow {
+    flex-shrink: 0;
+    color: #cfb991;
+    transition: transform 0.2s ease;
+}
+.cta-card:hover .cta-card-arrow {
+    transform: translateX(4px);
+}
+.cta-card-description {
+    margin-top: 0.75rem;
+    font-size: clamp(1.09375rem, 0.5078rem + 1.875vw, 1.5625rem);
+    line-height: 1.5;
+    color: #aaa;
+    min-width: 0;
+}
+/* #endregion */
 
+/* #region Category panel */
+.datasets-panel {
+    background-color: #141414;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 2rem;
+    min-width: 0;
 }
-.datasets-header-description-text{
-    color:white;
-    font-family: Poppins, sans-serif;
-    font-size: clamp(1.3125rem, 0.6094rem + 2.25vw, 1.875rem);
-
+.datasets-panel-title {
+    font-size: clamp(1.53125rem, 0.7109rem + 2.625vw, 2.1875rem);
+    font-weight: 600;
+    color: #f5f5f5;
 }
+.datasets-panel-description {
+    margin-top: 0.5rem;
+    font-size: clamp(0.984375rem, 0.4570rem + 1.6875vw, 1.40625rem);
+    line-height: 1.5;
+    color: #888;
+}
+.category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+    min-width: 0;
+}
+.category-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    min-width: 0;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.category-card:hover {
+    border-color: #cfb991;
+    background-color: #202020;
+}
+.category-card-icon {
+    flex-shrink: 0;
+    width: 3.25rem;
+    height: 3.25rem;
+    object-fit: contain;
+    border-radius: 8px;
+}
+.category-card-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: clamp(1.2rem, 0.7rem + 0.625vw, 1.5rem);
+    font-weight: 500;
+    color: #e0e0e0;
+}
+.category-card-chevron {
+    flex-shrink: 0;
+    font-size: 1.5rem;
+    color: #666;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.category-card:hover .category-card-chevron {
+    color: #cfb991;
+    transform: translateX(3px);
+}
+/* #endregion */

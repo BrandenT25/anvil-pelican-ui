@@ -1,12 +1,13 @@
 <!doctype html>
 <html>
   <head>
-    <title>This is the title of the webpage!</title>
-<   <link rel="preconnect" href="https://fonts.googleapis.com">
+    <title>Pelican Dataset Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ ROOT_URL }}/api/static/css/home.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="{{ ROOT_URL }}/api/static/css/home.css">
   </head>
   <body>
     <div class="home-navbar">
@@ -26,112 +27,64 @@
             </div>
         </div>
     </div>
-    <div class="page-columns">
-        <div class="left-column">
-            <div class="header-container">
-                <div class="header">
-                    <h1 class="header-text">Bring Data to your workflows, not the other way around</h1>
-                </div>
-            <div class="header-description">
-                <i class="ti ti-corner-down-right" style="font-size: clamp(1.75rem, 0.8125rem + 3vw, 2.5rem);"></i>
-                <h1 class="header-description-text">Discover datasets, grab a path or snippet, and get back to your analysis</h1>
-            </div>
+    <main class="page-columns">
+        <section class="left-column">
+            <div class="hero">
+                <h1 class="hero-title">Bring data to your <span class="hero-accent">workflows</span>, not the other way around</h1>
+                <p class="hero-subtitle">
+                    <i class="ti ti-corner-down-right hero-subtitle-icon"></i>
+                    <span class="hero-subtitle-text">Discover datasets, grab a path or snippet, and get back to your analysis.</span>
+                </p>
             </div>
             <div class="cta-card-container">
-                <a href="{{ ROOT_URL }}/datasets">
-                    <div class="cta-card">
-                        <div class="cta-card-header">
-                            <img src="{{ ROOT_URL }}/api/static/img/mag-glass.png" alt="mag-glass" height="70"></img>
-                            <h1 class="cta-card-header-text">Explore Datasets</h1>
-                        </div>
-                        <div class="cta-card-description">
-                            <h1 class="cta-card-description-text">If you do not yet have a pelican endpoint for a dataset we have a wide array of already indexed datasets you can
-explore, included endpoints and usage examples!</h1>
-                        </div>
+                <a class="cta-card" href="{{ ROOT_URL }}/datasets">
+                    <div class="cta-card-icon">
+                        <img src="{{ ROOT_URL }}/api/static/img/mag-glass.png" alt="">
+                    </div>
+                    <div class="cta-card-body">
+                        <h2 class="cta-card-title">Explore Datasets <i class="ti ti-arrow-right cta-card-arrow"></i></h2>
+                        <p class="cta-card-description">Don't have a Pelican endpoint yet? Browse a wide array of already-indexed datasets, complete with endpoints and usage examples.</p>
                     </div>
                 </a>
-                <a href="{{ ROOT_URL }}/quick-access">
-                    <div class="cta-card">
-                        <div class="cta-card-header">
-                            <img src="{{ ROOT_URL }}/api/static/img/lightning-bolt.png" alt="mag-glass" height="70"></img>
-                            <h1 class="cta-card-header-text">Quick Access</h1>
-                        </div>
-                        <div class="cta-card-description">
-                            <h1 class="cta-card-description-text">If you already have an endpoint you can generate usage snippets and download datasets to your allocations!</h1>
-                        </div>
+                <a class="cta-card" href="{{ ROOT_URL }}/quick-access">
+                    <div class="cta-card-icon">
+                        <img src="{{ ROOT_URL }}/api/static/img/lightning-bolt.png" alt="">
+                    </div>
+                    <div class="cta-card-body">
+                        <h2 class="cta-card-title">Quick Access <i class="ti ti-arrow-right cta-card-arrow"></i></h2>
+                        <p class="cta-card-description">Already have an endpoint? Generate usage snippets and download datasets straight to your allocations.</p>
                     </div>
                 </a>
-
             </div>
-        </div>
-        <div class="right-column">
-            <div class="datasets">
-                <div class="datasets-header">
-                    <div class="datasets-header-title">
-                        <h1 class="datasets-header-title-text">Datasets</h1>
-                    </div>
-                    <div class=datasets-header-description>
-                        <i class="ti ti-corner-down-right" style="font-size: clamp(1.75rem, 0.8125rem + 3vw, 2.5rem);"></i>
-                        <h1 class="datasets-header-description-text">we provide a wide arrange of datasets already indexed</h1>
-                    </div>
-                </div>
-                <div class="category-container">
-                    <div class="category-card">
-                        <a href="{{ ROOT_URL }}/datasets/category/earth-climate">
-                            <div class="category-card-icon">
-                                <img src="{{ ROOT_URL }}/api/static/img/climate-category-icon.webp" alt="cloud-icon" height="110"></img>
-                            </div>
-                        </a>
-                        <div class="category-card-connector">
-
-                        </div>
-                        <div class="category-card-text-container">
-                            <h1 class="category-card-text">Earth / Climate</h1>
-                        </div>
-                    </div> 
-                        <div class="category-card">
-                        <a href="{{ ROOT_URL }}/datasets/category/machine-learning">
-                            <div class="category-card-icon">
-                                <img src="{{ ROOT_URL }}/api/static/img/machine-learning-category-icon.png" alt="Machine-Learning-icon" height="110"></img>
-                            </div>
-                        </a>
-                        <div class="category-card-connector">
-
-                        </div>
-                        <div class="category-card-text-container">
-                            <h1 class="category-card-text">Machine Learning</h1>
-                        </div>
-                    </div> 
-                        <div class="category-card">
-                        <a href="{{ ROOT_URL }}/datasets/category/physics">
-                            <div class="category-card-icon">
-                                <img src="{{ ROOT_URL }}/api/static/img/physics-category-icon.png" alt="Physics-icon" height="110"></img>
-                            </div>
-                        </a>
-                        <div class="category-card-connector">
-
-                        </div>
-                        <div class="category-card-text-container">
-                            <h1 class="category-card-text">Physics</h1>
-                        </div>
-                        
-                    </div> 
-                    <div class="category-card">
-                        <a href="{{ ROOT_URL }}/datasets/category/genomics">
-                            <div class="category-card-icon">
-                                <img src="{{ ROOT_URL }}/api/static/img/genomics-category-icon.png" alt="Genomics-icon" height="110"></img>
-                            </div>
-                        </a>
-                        <div class="category-card-connector">
-
-                        </div>
-                        <div class="category-card-text-container">
-                            <h1 class="category-card-text">Genomics</h1>
-                        </div>
-                    </div> 
+        </section>
+        <aside class="right-column">
+            <div class="datasets-panel">
+                <h2 class="datasets-panel-title">Browse by category</h2>
+                <p class="datasets-panel-description">A growing collection of indexed datasets across research domains.</p>
+                <div class="category-list">
+                    <a class="category-card" href="{{ ROOT_URL }}/datasets/category/earth-climate">
+                        <img class="category-card-icon" src="{{ ROOT_URL }}/api/static/img/climate-category-icon.webp" alt="">
+                        <span class="category-card-text">Earth / Climate</span>
+                        <i class="ti ti-chevron-right category-card-chevron"></i>
+                    </a>
+                    <a class="category-card" href="{{ ROOT_URL }}/datasets/category/machine-learning">
+                        <img class="category-card-icon" src="{{ ROOT_URL }}/api/static/img/machine-learning-category-icon.png" alt="">
+                        <span class="category-card-text">Machine Learning</span>
+                        <i class="ti ti-chevron-right category-card-chevron"></i>
+                    </a>
+                    <a class="category-card" href="{{ ROOT_URL }}/datasets/category/physics">
+                        <img class="category-card-icon" src="{{ ROOT_URL }}/api/static/img/physics-category-icon.png" alt="">
+                        <span class="category-card-text">Physics</span>
+                        <i class="ti ti-chevron-right category-card-chevron"></i>
+                    </a>
+                    <a class="category-card" href="{{ ROOT_URL }}/datasets/category/genomics">
+                        <img class="category-card-icon" src="{{ ROOT_URL }}/api/static/img/genomics-category-icon.png" alt="">
+                        <span class="category-card-text">Genomics</span>
+                        <i class="ti ti-chevron-right category-card-chevron"></i>
+                    </a>
                 </div>
             </div>
-        </div>
-    </div>
+        </aside>
+    </main>
   </body>
 </html>

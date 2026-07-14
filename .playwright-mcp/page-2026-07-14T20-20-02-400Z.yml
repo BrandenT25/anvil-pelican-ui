@@ -1,0 +1,67 @@
+- generic [active] [ref=e1]:
+  - text: <
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img "pelican-logo" [ref=e5]
+      - list [ref=e6]:
+        - listitem [ref=e7]:
+          - link "Explore Datasets" [ref=e8] [cursor=pointer]:
+            - /url: /datasets
+        - listitem [ref=e9]:
+          - link "Quick Access" [ref=e10] [cursor=pointer]:
+            - /url: /quick-access
+        - listitem [ref=e11]:
+          - link "About/Research" [ref=e12] [cursor=pointer]:
+            - /url: /about
+    - img "purdue-logo" [ref=e15]
+  - generic [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - heading "Bring Data to your workflows, not the other way around" [level=1] [ref=e20]
+        - generic [ref=e21]:
+          - generic [ref=e22]: 
+          - heading "Discover datasets, grab a path or snippet, and get back to your analysis" [level=1] [ref=e23]
+      - generic [ref=e24]:
+        - link [ref=e25] [cursor=pointer]:
+          - /url: /datasets
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - img "mag-glass" [ref=e28]
+              - heading "Explore Datasets" [level=1] [ref=e29]
+            - heading "If you do not yet have a pelican endpoint for a dataset we have a wide array of already indexed datasets you can explore, included endpoints and usage examples!" [level=1] [ref=e31]
+        - link [ref=e32] [cursor=pointer]:
+          - /url: /quick-access
+          - generic [ref=e33]:
+            - generic [ref=e34]:
+              - img "mag-glass" [ref=e35]
+              - heading "Quick Access" [level=1] [ref=e36]
+            - heading "If you already have an endpoint you can generate usage snippets and download datasets to your allocations!" [level=1] [ref=e38]
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - heading "Datasets" [level=1] [ref=e43]
+        - generic [ref=e44]:
+          - generic [ref=e45]: 
+          - heading "we provide a wide arrange of datasets already indexed" [level=1] [ref=e46]
+      - generic [ref=e47]:
+        - generic [ref=e48]:
+          - link [ref=e49] [cursor=pointer]:
+            - /url: /datasets/category/earth-climate
+            - img "cloud-icon" [ref=e51]
+          - heading "Earth / Climate" [level=1] [ref=e54]
+        - generic [ref=e55]:
+          - link [ref=e56] [cursor=pointer]:
+            - /url: /datasets/category/machine-learning
+            - img "Machine-Learning-icon" [ref=e58]
+          - heading "Machine Learning" [level=1] [ref=e61]
+        - generic [ref=e62]:
+          - link [ref=e63] [cursor=pointer]:
+            - /url: /datasets/category/physics
+            - img "Physics-icon" [ref=e65]
+          - heading "Physics" [level=1] [ref=e68]
+        - generic [ref=e69]:
+          - link [ref=e70] [cursor=pointer]:
+            - /url: /datasets/category/genomics
+            - img "Genomics-icon" [ref=e72]
+          - heading "Genomics" [level=1] [ref=e75]
