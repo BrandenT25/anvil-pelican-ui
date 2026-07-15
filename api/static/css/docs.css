@@ -236,6 +236,28 @@ body {
 }
 /* #endregion */
 
+/* #region Figures (screenshots) */
+figure.docs-figure {
+  margin: 0 0 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+figure.docs-figure img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+}
+figure.docs-figure figcaption {
+  width: 100%;
+  padding: 0.6rem 0.25rem;
+  font-size: 0.78rem;
+  color: #777;
+}
+/* #endregion */
+
 /* #region Placeholder styling (TODO areas visible during drafting) */
 .docs-todo {
   border: 1px dashed #333;
@@ -245,18 +267,13 @@ body {
 p.docs-todo {
   padding: 0.75rem;
 }
-figure.docs-figure {
-  margin: 0 0 1.25rem;
+figure.docs-todo {
   min-height: 14rem;
-  display: flex;
-  align-items: flex-end;
+  justify-content: flex-end;
   background-color: #101010;
 }
-figure.docs-figure figcaption {
-  width: 100%;
+figure.docs-todo figcaption {
   padding: 0.6rem 0.75rem;
-  font-size: 0.78rem;
-  color: #777;
   border-top: 1px dashed #333;
 }
 /* #endregion */
