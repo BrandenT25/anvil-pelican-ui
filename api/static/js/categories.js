@@ -26,10 +26,8 @@ async function addCategoryCard(category){
                 <div class="category-card-icon">
                     <img src="${window.ROOT_PATH}/${category["icon"]}" alt="category card icon"></img>
                 </div>
-                <div class="category-card-text">
-                    <h2 class="category-card-name">${category["name"]}</h2>
-                    <p class="category-card-description-text">${category["description"]}</p>
-                </div>
+                <h2 class="category-card-name">${category["name"]}</h2>
+                <p class="category-card-description-text">${category["description"]}</p>
             </div>
         </a>
         `
