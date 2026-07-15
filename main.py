@@ -41,6 +41,10 @@ async def main_page(request: Request):
 async def main_page(request: Request):
     return templates.TemplateResponse(request, "about.html", {"ROOT_URL": request.scope.get('root_path', '')})
 
+@app.get('/documentation', response_class=HTMLResponse)
+async def documentation_page(request: Request):
+    return templates.TemplateResponse(request, "docs.html", {"ROOT_URL": request.scope.get('root_path', '')})
+
 @app.get('/datasets/category/{category}')
 async def category_page(category, request: Request):
     return templates.TemplateResponse(request, "datasets.html", {"ROOT_URL": request.scope.get('root_path', ''), "CATEGORY": category, "USER": USER})
