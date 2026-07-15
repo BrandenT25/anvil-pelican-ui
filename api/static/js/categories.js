@@ -24,11 +24,11 @@ async function addCategoryCard(category){
         <a href="${window.ROOT_PATH}/datasets/category/${category["url"]}">
             <div class="category-card-content">
                 <div class="category-card-icon">
-                    <img src="${window.ROOT_PATH}/${category["icon"]}" alt="category card icon" height="110"></img>
+                    <img src="${window.ROOT_PATH}/${category["icon"]}" alt="category card icon"></img>
                 </div>
-                <div class="category-card-spacer"></div>
-                <div class="category-card-description">
-                    <h1 class="category-card-description-text">${category["name"]}</h1>
+                <div class="category-card-text">
+                    <h2 class="category-card-name">${category["name"]}</h2>
+                    <p class="category-card-description-text">${category["description"]}</p>
                 </div>
             </div>
         </a>
