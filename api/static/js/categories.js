@@ -37,9 +37,25 @@ async function addCategoryCard(category){
     }
 
 }
+function initCategorySearch(){
+    const input = document.querySelector(".category-search-input");
+    const button = document.querySelector(".category-search-submit");
+    function submitSearch(){
+        const query = input.value.trim();
+        if(!query) return;
+        window.location.href = `${window.ROOT_PATH}/datasets/search?search=${encodeURIComponent(query)}`;
+    }
+    button.addEventListener("click", submitSearch);
+    input.addEventListener("keydown", (event) => {
+        if(event.key === "Enter"){
+            submitSearch();
+        }
+    });
+}
 function main(){
     document.addEventListener("DOMContentLoaded", (event) => {
         fetchCategories();
+        initCategorySearch();
     })
 }
 main();

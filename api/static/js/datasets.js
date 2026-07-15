@@ -119,15 +119,69 @@ async function fetchDatasets() {
     }
     const datasets = await datasetResponse.json();
     datasets.forEach((dataset) => {
-      dataset["tags"].forEach((tag) => {
-        if (tag == window.CATEGORY) {
-          addDatasetCard(dataset);
-        }
-      });
+      // no CATEGORY set (the /datasets/search landing) => render every
+      // dataset, so the shared search filter below decides what shows
+      if (!window.CATEGORY || dataset["tags"].some((tag) => tag == window.CATEGORY)) {
+        addDatasetCard(dataset);
+      }
     });
+    initDatasetSearch();
   } catch (error) {
     console.log("fetch operation failed", error);
   }
+}
+
+/**
+ * shows only cards whose name/description contains the query,
+ * used both by live typing and by an arriving ?search= parameter
+ * @param {string} query
+ */
+function applyDatasetFilter(query) {
+  const cleanedQuery = query.trim().toLowerCase();
+  let visibleCount = 0;
+  document.querySelectorAll(".dataset-card").forEach((card) => {
+    const matches = !cleanedQuery || card.dataset.searchText.includes(cleanedQuery);
+    card.style.display = matches ? "" : "none";
+    if (matches) {
+      visibleCount += 1;
+    }
+  });
+  const emptyBox = document.querySelector(".dataset-search-empty");
+  emptyBox.style.display = visibleCount === 0 ? "block" : "none";
+}
+
+/**
+ * wires the search input, pre-fills it from a ?search= URL parameter
+ * (set when arriving from the Categories page search), and hooks up
+ * the "Showing results for" status row and its clear button
+ */
+function initDatasetSearch() {
+  const input = document.querySelector(".dataset-search-input");
+  const status = document.querySelector(".dataset-search-status");
+  const statusText = document.querySelector(".dataset-search-status-text");
+  const clearButton = document.querySelector(".dataset-search-clear");
+  const searchParam = new URLSearchParams(window.location.search).get("search");
+
+  if (searchParam) {
+    input.value = searchParam;
+    statusText.textContent = `Showing results for "${searchParam}"`;
+    status.style.display = "flex";
+    applyDatasetFilter(searchParam);
+  }
+
+  input.addEventListener("input", () => {
+    status.style.display = "none";
+    applyDatasetFilter(input.value);
+  });
+
+  clearButton.addEventListener("click", () => {
+    input.value = "";
+    status.style.display = "none";
+    applyDatasetFilter("");
+    const url = new URL(window.location);
+    url.searchParams.delete("search");
+    window.history.replaceState({}, "", url);
+  });
 }
 
 /**
@@ -141,6 +195,7 @@ function addDatasetCard(dataset) {
     const newCard = document.createElement("div");
     const container = document.querySelector(".dataset-card-container");
     newCard.className = "dataset-card";
+    newCard.dataset.searchText = `${dataset.name} ${dataset.description}`.toLowerCase();
     newCard.innerHTML = /* html */ `
             <div class="dataset-card-top">
                 <div class="dataset-card-header">
