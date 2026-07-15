@@ -147,10 +147,27 @@ function addDatasetCard(dataset) {
                     <span class="dataset-card-title-box">${dataset.name}</span>
                     <span class="arrow"></span>
                 </div>
-                <div class="dataset-card-description">${dataset.description}</div>
+                <div class="dataset-meta-row">
+                  ${dataset["format"] ? `<span class="dataset-meta-badge dataset-meta-format"><i class="fa fa-file-o"></i>${dataset["format"]}</span>` : ""}
+                  <span class="dataset-meta-badge ${dataset["streamable"] ? "dataset-meta-streamable" : "dataset-meta-static"}">
+                    <i class="fa ${dataset["streamable"] ? "fa-bolt" : "fa-download"}"></i>${dataset["streamable"] ? "Streamable" : "Download only"}
+                  </span>
+                  ${dataset["access"] ? `<span class="dataset-meta-badge dataset-meta-access"><i class="fa fa-lock"></i>${dataset["access"]}</span>` : ""}
+                </div>
             </div>
             <div class="dataset-card-content">
               <div class="dataset-description-container">
+                <div class="dataset-description-header">
+                  <h1>About</h1>
+                  <div class="dataset-description-split"></div>
+                </div>
+                <div class="dataset-description-body">
+                  <p class="dataset-description-text">${dataset.description}</p>
+                </div>
+                <div class="dataset-description-endpoint">
+                  <span class="dataset-description-endpoint-label">Endpoint</span>
+                  <code class="dataset-description-endpoint-path">${dataset.path}</code>
+                </div>
               </div>
 
               <div class="dataset-snippet-container">
@@ -175,13 +192,6 @@ function addDatasetCard(dataset) {
               <div class="file-browser-container">
                     <div class="file-browser-header">
                         <h1>${dataset["name"]}</h1>
-                        <div class="dataset-meta-row">
-                          ${dataset["format"] ? `<span class="dataset-meta-badge dataset-meta-format"><i class="fa fa-file-o"></i>${dataset["format"]}</span>` : ""}
-                          <span class="dataset-meta-badge ${dataset["streamable"] ? "dataset-meta-streamable" : "dataset-meta-static"}">
-                            <i class="fa ${dataset["streamable"] ? "fa-bolt" : "fa-download"}"></i>${dataset["streamable"] ? "Streamable" : "Download only"}
-                          </span>
-                          ${dataset["access"] ? `<span class="dataset-meta-badge dataset-meta-access"><i class="fa fa-lock"></i>${dataset["access"]}</span>` : ""}
-                        </div>
                         <div class="file-browser-header-split"></div>
                         <div class="file-browser-breadcrumbs"></div>
                     </div>
