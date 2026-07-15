@@ -1,4 +1,4 @@
-name: Pelican Dataset Browser
+name: Pelican-UI
 description: Browse and download datasets available via Pelican/OSDF on Anvil
 icon: fa://database
 language: python
