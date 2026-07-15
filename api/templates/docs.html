@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Documentation — Pelican Dataset Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="{{ROOT_URL}}/api/static/js/docs.js" defer></script>
+    <link rel="stylesheet" href="{{ROOT_URL}}/api/static/css/navbar.css">
+    <link rel="stylesheet" href="{{ROOT_URL}}/api/static/css/docs.css">
+  </head>
+  <body>
+    {% include "partials/navbar.html" %}
+    <div class="docs-layout">
+
+      <nav class="docs-sidebar">
+        <div class="docs-sidebar-title">Documentation</div>
+        <ul class="docs-sidebar-list">
+          <li><a class="docs-sidebar-link" href="#getting-started">Getting Started</a></li>
+          <li class="docs-sidebar-group">
+            <div class="docs-sidebar-group-header">
+              <a class="docs-sidebar-link" href="#using-pelican-ui">Using pelican-ui</a>
+              <button class="docs-sidebar-chevron" aria-label="Toggle section"></button>
+            </div>
+            <ul class="docs-sidebar-sublist">
+              <li><a class="docs-sidebar-link docs-sidebar-sublink" href="#browsing-datasets">Browsing datasets</a></li>
+              <li><a class="docs-sidebar-link docs-sidebar-sublink" href="#quick-access">Quick Access</a></li>
+              <li><a class="docs-sidebar-link docs-sidebar-sublink" href="#file-browser">The file browser</a></li>
+              <li><a class="docs-sidebar-link docs-sidebar-sublink" href="#snippets-panel">The snippets panel</a></li>
+              <li><a class="docs-sidebar-link docs-sidebar-sublink" href="#downloading-files">Downloading files</a></li>
+              <li><a class="docs-sidebar-link docs-sidebar-sublink" href="#troubleshooting">Troubleshooting</a></li>
+            </ul>
+          </li>
+          <li><a class="docs-sidebar-link" href="#about-pelican-osdf">About Pelican / OSDF</a></li>
+          <li><a class="docs-sidebar-link" href="#research-findings">Research Findings</a></li>
+        </ul>
+      </nav>
+
+      <main class="docs-content">
+        <h1>pelican-ui Documentation</h1>
+
+        <h2 id="getting-started">Getting Started</h2>
+
+        <h3 id="what-is-pelican-ui">What is pelican-ui?</h3>
+        <p class="docs-todo"><!-- TODO: one paragraph — what pelican-ui is, who it's for (researchers on Anvil), and what it lets you do (browse, stream, download federated datasets without leaving the cluster) --></p>
+
+        <h3 id="what-is-pelican">What are Pelican and OSDF?</h3>
+        <p class="docs-todo"><!-- TODO: one paragraph, one level up from this project — Pelican as a data federation platform, OSDF as the Open Science Data Federation built on it, and how endpoints/origins/caches fit together at a high level --></p>
+
+        <h2 id="using-pelican-ui">Using pelican-ui</h2>
+
+        <h3 id="browsing-datasets">Browsing datasets on the Explore Datasets page</h3>
+        <p class="docs-todo"><!-- TODO: how the category grid leads to dataset cards, what the collapsed card shows (name, format/streamable/access badges), and what expanding a card reveals (About panel, snippets, file browser) --></p>
+        <figure class="docs-figure docs-todo">
+          <!-- TODO: screenshot of the Explore Datasets page with one card expanded -->
+          <figcaption>Screenshot — Explore Datasets with an expanded dataset card</figcaption>
+        </figure>
+
+        <h3 id="quick-access">Using Quick Access to load an arbitrary path</h3>
+        <p class="docs-todo"><!-- TODO: when to use Quick Access instead of Explore Datasets (you already have an endpoint path), what the input expects, and what appears after a successful load --></p>
+        <div class="docs-callout docs-callout-tip">
+          <span class="docs-callout-label">Tip</span>
+          <div class="docs-callout-body"><!-- TODO: tip — the Endpoint chip on any dataset's About panel can be copied straight into Quick Access --></div>
+        </div>
+        <figure class="docs-figure docs-todo">
+          <!-- TODO: screenshot of Quick Access after submitting a path, showing browser + snippets -->
+          <figcaption>Screenshot — Quick Access with a loaded path</figcaption>
+        </figure>
+
+        <h3 id="file-browser">Reading the file browser</h3>
+        <p class="docs-todo"><!-- TODO: breadcrumbs (click any segment to jump back up), folder names drill in, checkboxes select files or whole folders, selecting a folder covers its descendants, and the selection count/size readout at the bottom --></p>
+
+        <h3 id="snippets-panel">Using the snippets panel</h3>
+        <p class="docs-todo"><!-- TODO: what the snippet variants are for, how the dropdown works, how the selected dataset's path is substituted in, and the copy-to-clipboard icon --></p>
+
+        <h4>pelicanfs / fsspec</h4>
+        <pre><code class="language-python"><!-- TODO: snippet showing pelicanfs PelicanFileSystem / OSDFFileSystem and fsspec usage --></code></pre>
+
+        <h4>xarray</h4>
+        <pre><code class="language-python"><!-- TODO: snippet showing xarray open_mfdataset over osdf:// and PelicanMap usage --></code></pre>
+
+        <h4>pandas</h4>
+        <pre><code class="language-python"><!-- TODO: snippet showing pandas read_csv through an fsspec osdf filesystem --></code></pre>
+
+        <h4>PyTorch</h4>
+        <pre><code class="language-python"><!-- TODO: snippet showing torchdata IterableWrapper list/stream over osdf:// --></code></pre>
+
+        <h3 id="downloading-files">Downloading files to Home / Project / Scratch</h3>
+        <p class="docs-todo"><!-- TODO: the Select Folder flow — choosing a medium, navigating to a destination folder, what the Download button does, and where files land on Anvil --></p>
+        <div class="docs-callout docs-callout-warn">
+          <span class="docs-callout-label">Warn</span>
+          <div class="docs-callout-body"><!-- TODO: warning — Anvil scratch is purged on a schedule; do not use it for long-term storage of downloaded datasets --></div>
+        </div>
+
+        <h3 id="troubleshooting">Troubleshooting</h3>
+
+        <h4>A path loads in Quick Access but shows no files</h4>
+        <p class="docs-todo"><!-- TODO: likely causes (path points at a file not a directory, origin temporarily unreachable) and what to try --></p>
+
+        <h4>Downloads never appear in the chosen folder</h4>
+        <p class="docs-todo"><!-- TODO: likely causes (allocation quota, wrong project allocation selected) and how to verify --></p>
+
+        <h4>A snippet fails with an import error</h4>
+        <p class="docs-todo"><!-- TODO: pelicanfs/torchdata not installed in the active environment; pip install lines from the snippet comments --></p>
+
+        <h2 id="about-pelican-osdf">About Pelican / OSDF</h2>
+        <p class="docs-todo"><!-- TODO: short conceptual explanation — origins publish data, caches serve it near compute, clients address everything by federation path; how this differs from a cloud bucket --></p>
+
+        <div class="docs-callout docs-callout-note">
+          <span class="docs-callout-label">Note</span>
+          <div class="docs-callout-body"><!-- TODO: OSDF has no central dataset catalog — you cannot list "everything in the federation"; discovery happens through indexes like this one, which is why pelican-ui maintains its own curated dataset list --></div>
+        </div>
+
+        <div class="docs-callout docs-callout-note">
+          <span class="docs-callout-label">Note</span>
+          <div class="docs-callout-body"><!-- TODO: streamability depends on how a dataset is packaged (e.g. zarr vs single large archive files), not on Pelican itself — the Streamable badge reflects the packaging, not the transport --></div>
+        </div>
+
+        <h2 id="research-findings">Research Findings</h2>
+        <p class="docs-todo"><!-- TODO: 1 paragraph summarizing the REU project's findings on federated data delivery for on-cluster workflows --></p>
+        <p class="docs-todo"><!-- TODO: optional second paragraph — links/pointers to the poster, paper, or repo for the research artifacts --></p>
+      </main>
+
+      <aside class="docs-toc">
+        <div class="docs-toc-title">On this page</div>
+        <ul class="docs-toc-list"></ul>
+      </aside>
+
+    </div>
+  </body>
+</html>
