@@ -2,6 +2,16 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source /etc/profile.d/105_rcac_work.sh
+
+export UV_INSTALL_DIR="$SCRIPT_DIR/../.uv-bin"
+if [ ! -x "$UV_INSTALL_DIR/uv" ]; then
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
+export PATH="$UV_INSTALL_DIR:$PATH"
+
+if [ ! -f "$SCRIPT_DIR/../.venv/bin/activate" ]; then
+    (cd "$SCRIPT_DIR/.." && uv sync)
+fi
 source $SCRIPT_DIR/../.venv/bin/activate
 
 
