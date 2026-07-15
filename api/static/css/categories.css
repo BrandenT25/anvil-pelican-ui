@@ -14,12 +14,19 @@ a {
     }
 }
 /* navbar styles moved to shared navbar.css */
+.category-page {
+    background-color: #0a0a0a;
+    margin-top: clamp(64px, 4px + 4.6875vw, 100px);
+    min-height: 100vh;
+    width: 100%;
+    padding: clamp(16px, 8px + 1.5vw, 24px);
+    min-width: 0;
+}
 .category-search-bar {
-    grid-column: 1 / -1;
     display: flex;
     justify-content: center;
     gap: 8px;
-    margin: 0.5rem 0 0.75rem;
+    margin: 0.5rem 0 1.25rem;
     min-width: 0;
 }
 .category-search-input {
@@ -59,12 +66,8 @@ a {
     background-color: #b9a476;
 }
 .category-card-container{
-    background-color: #0a0a0a;
-    margin-top: clamp(64px, 4px + 4.6875vw, 100px);
-    min-height:100vh;
     width:100%;
     display:grid;
-    padding: clamp(16px, 8px + 1.5vw, 24px);
     grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
     grid-auto-rows: min-content;
     gap: 1.25rem;
