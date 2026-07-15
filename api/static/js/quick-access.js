@@ -205,17 +205,17 @@ function buildSnippets(path){
         snippetCopy.dataset.copyData = ""
         snippetSelectorText.textContent = "None"
         snippetSelectorContent.innerHTML =  /* html */`
-            <div class="snippet-selector-card" id="python-pfs">Python - PelicanFileSystem</div>
-            <div class="snippet-selector-card" id="python-osdf">Python - OSDFFileSystem</div>
-            <div class="snippet-selector-card" id="python-fsspec-pfs">Python - Fsspec - PelicanFileSystem</div>
-            <div class="snippet-selector-card" id="python-fsspec-osdf">Python - Fsspec - OSDFFileSystem</div>
-            <div class="snippet-selector-card" id="python-local-storage">Python - Local Storage</div>
-            <div class="snippet-selector-card" id="python-xarray-osdf">Python - xarray-OSDFFileSystem</div>
-            <div class="snippet-selector-card" id="python-xarray-map">Python - xarray - PelicanMap</div>
-            <div class="snippet-selector-card" id="python-pandas">Python - pandas</div>
-            <div class="snippet-selector-card" id="python-pytorch-list">Python - Pytorch List</div>
-            <div class="snippet-selector-card" id="python-pytorch-stream">Python - Pytorch Stream</div>
-            <div class="snippet-selector-card" id="pelican-cli">Pelican Command Line</div>
+            <div class="snippet-selector-card" id="python-pfs"><i class="fa fa-code"></i>Python - PelicanFileSystem</div>
+            <div class="snippet-selector-card" id="python-osdf"><i class="fa fa-code"></i>Python - OSDFFileSystem</div>
+            <div class="snippet-selector-card" id="python-fsspec-pfs"><i class="fa fa-code"></i>Python - Fsspec - PelicanFileSystem</div>
+            <div class="snippet-selector-card" id="python-fsspec-osdf"><i class="fa fa-code"></i>Python - Fsspec - OSDFFileSystem</div>
+            <div class="snippet-selector-card" id="python-local-storage"><i class="fa fa-code"></i>Python - Local Storage</div>
+            <div class="snippet-selector-card" id="python-xarray-osdf"><i class="fa fa-code"></i>Python - xarray-OSDFFileSystem</div>
+            <div class="snippet-selector-card" id="python-xarray-map"><i class="fa fa-code"></i>Python - xarray - PelicanMap</div>
+            <div class="snippet-selector-card" id="python-pandas"><i class="fa fa-code"></i>Python - pandas</div>
+            <div class="snippet-selector-card" id="python-pytorch-list"><i class="fa fa-code"></i>Python - Pytorch List</div>
+            <div class="snippet-selector-card" id="python-pytorch-stream"><i class="fa fa-code"></i>Python - Pytorch Stream</div>
+            <div class="snippet-selector-card" id="pelican-cli"><i class="fa fa-terminal"></i>Pelican Command Line</div>
         `
         const snippetSelectors = snippetSelectorContent.querySelectorAll(".snippet-selector-card");
 
@@ -297,6 +297,7 @@ async function makeFolderCards(path, container, download_card, breadcrumbs){
   paths.forEach((folder_path) => {
     const cleanedPath = folder_path.name.replace(/\/$/, "");
     const name = cleanedPath.split("/").pop();
+    const nameWithBreaks = name.replace(/_/g, "_<wbr>");
     const newCard = document.createElement("div");
     let imageFile;
     let fileSize;
@@ -341,9 +342,9 @@ async function makeFolderCards(path, container, download_card, breadcrumbs){
         </div>
         <div class="folder-info-stack">
           <div class="folder-name-box" title="${name}">
-              ${name} 
+              ${nameWithBreaks}
           </div>
-          
+
         </div>
         `;
 
@@ -417,25 +418,32 @@ function download_file(container, download_paths) {
                 <span>&times;</span>
             </div>
             <div class="select-static-mediums-wrapper">
-                <div class="download-directory-back-btn">
-                </div>
-                <div class="select-static-mediums-content">
-                    <div class="medium-selection-wrapper">
-                        <div class="medium-selection-card" id="home"><span class="medium-selection-card-label">/Home</span></div>
-                        <div class="medium-selection-card" id="project"><span class="medium-selection-card-label">/Project</span></div>
-                        <div class="medium-selection-card" id="scratch"><span class="medium-selection-card-label">/Scratch</span></div>
+                <div class="download-modal-header">
+                    <div class="download-directory-back-btn">
+                        <i class="fa fa-arrow-left"></i>
+                        <span class="download-directory-back-btn-text">Back</span>
                     </div>
-                </div>
-                <div class="select-static-mediums">
-                    <span class="selected-static-medium"></span>
-                    <span class="select-static-mediums-arrow"></span>
+                    <div class="select-static-mediums-group">
+                        <div class="select-static-mediums">
+                            <span class="selected-static-medium">Choose a location</span>
+                            <span class="select-static-mediums-arrow"></span>
+                        </div>
+                        <div class="select-static-mediums-content">
+                            <div class="medium-selection-wrapper">
+                                <div class="medium-selection-card" id="home"><i class="fa fa-home"></i><span class="medium-selection-card-label">/Home</span></div>
+                                <div class="medium-selection-card" id="project"><i class="fa fa-folder"></i><span class="medium-selection-card-label">/Project</span></div>
+                                <div class="medium-selection-card" id="scratch"><i class="fa fa-clock-o"></i><span class="medium-selection-card-label">/Scratch</span></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="browse-medium-directory"></div>
                 <div class="directory-download-container">
+                    <div class="directory-download-info">
+                        <div class="directory-download-container-location"></div>
+                        <div class="directory-download-container-amount"></div>
+                    </div>
                     <div class="directory-download-button"><span>Download</span></div>
-                    <div class="directory-download-container-amount"></div>
-                    <div class="directory-download-container-location"></div>
-                
                 </div>
             </div>
         `;
@@ -625,7 +633,8 @@ async function makeLocalDirectoryCards(root, path = "", browseLocalDirectoryCont
 
     browseLocalDirectoryContainer.appendChild(newCard);
     newCard.innerHTML = `
-            <span class="local-directory-cards-label">/${folder}</span>
+            <i class="fa fa-folder-o"></i>
+            <span class="local-directory-cards-label">${folder}</span>
         `;
     const newPath = `${path}/${folder}`;
     newCard.addEventListener("click", () => {
