@@ -2,9 +2,8 @@ from fastapi import APIRouter
 import json, os
 from pathlib import Path
 import sqlite3 
+from api.core.config import DB_PATH
 
-
-DB_PATH = "/anvil/scratch/x-bturner/pelican.db"
 ROOTPATH = Path.cwd()
 DATASET_PATH = os.path.join(ROOTPATH, "data", "datasets.json")
 CATEGORY_PATH = os.path.join(ROOTPATH, "data", "categories.json")
