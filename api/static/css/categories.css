@@ -8,6 +8,11 @@ a {
   text-decoration: none;
   color: inherit;
 }
+@media (max-width: 1400px) {
+    html {
+        font-size: 70.5%;
+    }
+}
 /* navbar styles moved to shared navbar.css */
 .category-card-container{
     background-color: #0a0a0a;

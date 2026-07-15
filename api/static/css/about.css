@@ -4,4 +4,9 @@
     box-sizing: border-box;
     font-family: 'Segoe UI', sans-serif;
 }
+@media (max-width: 1400px) {
+    html {
+        font-size: 70.5%;
+    }
+}
 /* navbar styles moved to shared navbar.css */
