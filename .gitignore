@@ -9,7 +9,6 @@ __pycache__/
 # Virtual environments
 .venv/
 venv/
-bin/python
 
 # uv
 .uv/
