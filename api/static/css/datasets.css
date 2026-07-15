@@ -157,19 +157,19 @@ clamp(s_1px, calc(b + (m*100)vw), s_2px)
   width:auto;
   flex: 0 0 37.5%;
   height:auto;
+  min-height: 0;
   display:flex;
   border-radius: 10px;
   background-color: black;
   border: 10px solid #121212;
   flex-direction: column;
-  padding-bottom: 80px;
 }
 .dataset-snippet-header{
   position: relative;
   width: 100%;
   height: auto;
   padding: 1rem;
-  flex: 0 0 23%
+  flex: 0 0 auto;
 }
 .dataset-snippet-header-text-box{
   position:relative;
@@ -279,10 +279,12 @@ clamp(s_1px, calc(b + (m*100)vw), s_2px)
   border-color: #555;
 }
 .dataset-snippet-box{
-  height: 400px;
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 0;
   margin-left: 20px;
   margin-right: 20px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
   background-color: #0d0d0d;
   border-radius: 10px;
   border: 1px solid #2a2a2a;
@@ -291,6 +293,8 @@ clamp(s_1px, calc(b + (m*100)vw), s_2px)
   padding: 30px;
   position: relative;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #444 #1a1a1a;
   box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
 }
 .dataset-snippet-box pre{
@@ -312,6 +316,10 @@ clamp(s_1px, calc(b + (m*100)vw), s_2px)
 }
 .dataset-snippet-wrapper {
   position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 .dataset-snippet-wrapper .fa-copy {
   position: absolute;
