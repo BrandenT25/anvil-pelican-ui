@@ -163,7 +163,7 @@ class OSDFDataset(Dataset):
         </div>
 
         <h2 id="research-findings">Research Findings</h2>
-        <p>This project's benchmarking compared Pelican/OSDF against local Lustre and S3-backed storage across three tests: cache/time-to-first-byte behavior under concurrent load, download-first vs. streaming access patterns, and real ML training I/O (ResNet-50 on ImageNet). Streaming consistently outperformed downloading for partial-read workloads, and a warm OSDF cache came close to local storage performance. A cold cache was meaningfully slower, though, which matters for real workflow planning.</p>
+        <p>This project's benchmarking compared Pelican/OSDF against GPFS and S3-backed storage across three tests: cache/time-to-first-byte behavior under concurrent load, download-first vs. streaming access patterns, and real ML training I/O (ResNet-50 on ImageNet). Streaming consistently outperformed downloading for partial-read workloads, and a warm OSDF cache came close to local storage performance. A cold cache was meaningfully slower, though, which matters for real workflow planning.</p>
         <p>The more original finding wasn't really about performance, though. It was that OSDF's biggest practical barrier right now is discoverability, not speed. There's no central catalog, and even once you find a dataset, whether it's actually streamable depends on how it happens to be packaged. pelican-ui exists as a direct, applied response to that gap.</p>
       </main>
 
