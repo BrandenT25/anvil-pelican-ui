@@ -75,8 +75,112 @@ function initSidebarGroups() {
   });
 }
 
+/*
+ * Dataset Catalog section — fetches the live catalog from the backend once,
+ * then does all sorting/filtering client-side against the cached list so
+ * clicking a header or typing in the filter box doesn't refetch.
+ */
+let catalogDatasets = [];
+let catalogSort = { field: null, ascending: true };
+let catalogFilterText = "";
+
+function categoryDisplayText(dataset) {
+  return dataset.categories.length ? dataset.categories.join(", ") : "Uncategorized";
+}
+
+function renderCatalogTable() {
+  const tbody = document.querySelector(".docs-catalog-tbody");
+  const emptyBox = document.querySelector(".docs-catalog-empty");
+  if (!tbody) return;
+
+  const cleanedQuery = catalogFilterText.trim().toLowerCase();
+  let visible = cleanedQuery
+    ? catalogDatasets.filter((dataset) => dataset.name.toLowerCase().includes(cleanedQuery))
+    : catalogDatasets.slice();
+
+  if (catalogSort.field) {
+    visible.sort((a, b) => {
+      const aValue = catalogSort.field === "name" ? a.name : categoryDisplayText(a);
+      const bValue = catalogSort.field === "name" ? b.name : categoryDisplayText(b);
+      const result = aValue.toLowerCase().localeCompare(bValue.toLowerCase());
+      return catalogSort.ascending ? result : -result;
+    });
+  }
+
+  tbody.innerHTML = "";
+  visible.forEach((dataset) => {
+    const row = document.createElement("tr");
+    const searchUrl = `${window.ROOT_PATH}/datasets/search?search=${encodeURIComponent(dataset.name)}`;
+    row.innerHTML = /* html */ `
+      <td><a class="docs-catalog-dataset-link" href="${searchUrl}">${dataset.name}</a></td>
+      <td class="${dataset.categories.length ? "" : "docs-catalog-uncategorized"}">${categoryDisplayText(dataset)}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  emptyBox.style.display = visible.length === 0 ? "block" : "none";
+}
+
+function updateCatalogSortArrows() {
+  document.querySelectorAll(".docs-catalog-sortable").forEach((header) => {
+    const arrow = header.querySelector(".docs-catalog-sort-arrow");
+    if (header.dataset.sortField === catalogSort.field) {
+      arrow.classList.add("active");
+      arrow.classList.toggle("desc", !catalogSort.ascending);
+    } else {
+      arrow.classList.remove("active", "desc");
+    }
+  });
+}
+
+function initCatalogSort() {
+  document.querySelectorAll(".docs-catalog-sortable").forEach((header) => {
+    header.addEventListener("click", () => {
+      const field = header.dataset.sortField;
+      if (catalogSort.field === field) {
+        catalogSort.ascending = !catalogSort.ascending;
+      } else {
+        catalogSort = { field, ascending: true };
+      }
+      updateCatalogSortArrows();
+      renderCatalogTable();
+    });
+  });
+}
+
+function initCatalogFilter() {
+  const input = document.querySelector(".docs-catalog-search-input");
+  if (!input) return;
+  input.addEventListener("input", () => {
+    catalogFilterText = input.value;
+    renderCatalogTable();
+  });
+}
+
+async function initDatasetCatalog() {
+  const overview = document.querySelector(".docs-catalog-overview");
+  if (!overview) return;
+  try {
+    const response = await fetch(`${window.ROOT_PATH}/datasets/catalog`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status ${response.status}`);
+    }
+    const data = await response.json();
+    catalogDatasets = data.datasets;
+    const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    overview.textContent = `As of ${today}, there are ${data.dataset_count} publicly available datasets across ${data.category_count} categories: ${data.category_names.join(", ")}.`;
+    initCatalogSort();
+    initCatalogFilter();
+    renderCatalogTable();
+  } catch (error) {
+    overview.textContent = "Couldn't load the dataset catalog right now.";
+    console.log("initDatasetCatalog failed:", error);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   buildToc();
   initScrollSpy();
   initSidebarGroups();
+  initDatasetCatalog();
 });

@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>window.ROOT_PATH = "{{ROOT_URL}}"</script>
     <script src="{{ROOT_URL}}/api/static/js/docs.js" defer></script>
     <link rel="stylesheet" href="{{ROOT_URL}}/api/static/css/navbar.css">
     <link rel="stylesheet" href="{{ROOT_URL}}/api/static/css/docs.css">
@@ -34,6 +35,7 @@
             </ul>
           </li>
           <li><a class="docs-sidebar-link" href="#about-pelican-osdf">About Pelican / OSDF</a></li>
+          <li><a class="docs-sidebar-link" href="#dataset-catalog">Dataset Catalog</a></li>
           <li><a class="docs-sidebar-link" href="#research-findings">Research Findings</a></li>
         </ul>
       </nav>
@@ -161,6 +163,25 @@ class OSDFDataset(Dataset):
           <span class="docs-callout-label">Note</span>
           <div class="docs-callout-body">Whether a dataset can be streamed file-by-file also depends entirely on how its owner packaged it, not on Pelican itself. Individually addressable files and Zarr stores stream fine. Compressed archives like .tar.gz don't, because Pelican can't reach into a compressed archive without downloading and extracting the whole thing first.</div>
         </div>
+
+        <h2 id="dataset-catalog">Dataset Catalog</h2>
+        <p>Every dataset pelican-ui indexes, pulled live from the same database that powers the Explore Datasets page. Sort by clicking a column header, or filter by name below.</p>
+        <p class="docs-catalog-overview">Loading catalog…</p>
+        <div class="docs-catalog-controls">
+          <input type="text" class="docs-catalog-search-input" placeholder="Filter datasets by name">
+        </div>
+        <div class="docs-catalog-table-wrapper">
+          <table class="docs-catalog-table">
+            <thead>
+              <tr>
+                <th class="docs-catalog-sortable" data-sort-field="name">Dataset<span class="docs-catalog-sort-arrow"></span></th>
+                <th class="docs-catalog-sortable" data-sort-field="category">Category<span class="docs-catalog-sort-arrow"></span></th>
+              </tr>
+            </thead>
+            <tbody class="docs-catalog-tbody"></tbody>
+          </table>
+        </div>
+        <p class="docs-catalog-empty" style="display:none;">No datasets match your search.</p>
 
         <h2 id="research-findings">Research Findings</h2>
         <p>This project's benchmarking compared Pelican/OSDF against GPFS and S3-backed storage across three tests: cache/time-to-first-byte behavior under concurrent load, download-first vs. streaming access patterns, and real ML training I/O (ResNet-50 on ImageNet). Streaming consistently outperformed downloading for partial-read workloads, and a warm OSDF cache came close to local storage performance. A cold cache was meaningfully slower, though, which matters for real workflow planning.</p>

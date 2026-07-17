@@ -327,6 +327,127 @@ figure.docs-todo figcaption {
 }
 /* #endregion */
 
+/* #region Dataset Catalog table */
+.docs-catalog-overview {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #f5f5f5;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+.docs-catalog-controls {
+  margin-bottom: 1rem;
+}
+.docs-catalog-search-input {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #f5f5f5;
+  height: 40px;
+  width: 100%;
+  max-width: 320px;
+  padding: 0 14px;
+  font-family: Poppins, sans-serif;
+  font-size: 0.88rem;
+  min-width: 0;
+}
+.docs-catalog-search-input::placeholder {
+  color: #666;
+}
+.docs-catalog-search-input:focus {
+  outline: none;
+  border-color: #cfb991;
+}
+.docs-catalog-table-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 420px;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  min-width: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #444 #1a1a1a;
+}
+.docs-catalog-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.docs-catalog-table thead {
+  background-color: #141414;
+}
+.docs-catalog-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  padding: 10px 14px;
+  font-weight: 600;
+  color: #ccc;
+  background-color: #141414;
+  border-bottom: 1px solid #2a2a2a;
+  white-space: nowrap;
+}
+.docs-catalog-sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+.docs-catalog-sortable:hover {
+  color: #cfb991;
+}
+.docs-catalog-sort-arrow {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 6px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 5px solid #555;
+  vertical-align: middle;
+  opacity: 0.35;
+}
+.docs-catalog-sort-arrow.active {
+  opacity: 1;
+  border-bottom-color: #cfb991;
+}
+.docs-catalog-sort-arrow.active.desc {
+  border-bottom: none;
+  border-top: 5px solid #cfb991;
+}
+.docs-catalog-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #1a1a1a;
+  color: #b9b9b9;
+  overflow-wrap: anywhere;
+}
+.docs-catalog-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+.docs-catalog-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.docs-catalog-dataset-link {
+  color: #e0e0e0;
+  transition: color 0.15s ease;
+}
+.docs-catalog-dataset-link:hover {
+  color: #cfb991;
+  text-decoration: underline;
+}
+.docs-catalog-uncategorized {
+  color: #777;
+  font-style: italic;
+}
+.docs-catalog-empty {
+  font-size: 0.88rem;
+  color: #888;
+  padding: 1rem 0;
+  text-align: center;
+}
+/* #endregion */
+
 /* #region Right-side "On this page" panel */
 .docs-toc {
   position: sticky;
