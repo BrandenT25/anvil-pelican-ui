@@ -782,18 +782,28 @@ async function makeLocalDirectoryCards(root, path = "", browseLocalDirectoryCont
   mediumLabel.textContent = displayText;
   downloadLocationLabel.textContent = `Downloading in Folder: ${downloadLocation}`;
   const folders = await fetchLocalDirectory(path);
+
   folders.forEach((folder) => {
+    const isEntryObject = typeof folder === "object" && folder !== null;
+    const name = isEntryObject ? folder.name : folder;
+    const accessible = isEntryObject ? folder.accessible : true;
+
     const newCard = document.createElement("div");
     newCard.className = "local-directory-cards";
+    if (!accessible) {
+      newCard.classList.add("local-directory-cards-disabled");
+    }
 
     browseLocalDirectoryContainer.appendChild(newCard);
     newCard.innerHTML = `
-            <i class="fa fa-folder-o"></i>
-            <span class="local-directory-cards-label">${folder}</span>
-        `;
-    const newPath = `${path}/${folder}`;
-    newCard.addEventListener("click", () => {
-      console.log(path);
+      <i class="fa fa-folder-o"></i>
+      <span class="local-directory-cards-label">${name}</span>
+      ${!accessible ? '<i class="fa fa-lock local-directory-cards-denied" title="You don\'t have permission to access this allocation"></i>' : ""}
+      `
+
+    if (accessible) {
+      const newPath = `${path}/${name}`;
+      newCard.addEventListener("click", () => {
       makeLocalDirectoryCards(
         root,
         newPath,
@@ -802,7 +812,9 @@ async function makeLocalDirectoryCards(root, path = "", browseLocalDirectoryCont
         downloadLocationLabel,
       );
     });
-  });
+  }
+});
+
 }
 
 async function fetchLocalDirectory(path) {
