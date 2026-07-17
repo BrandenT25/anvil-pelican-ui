@@ -105,6 +105,20 @@ const snippetTemplates = {
   </code></pre>`,
 };
 
+const snippetDescriptions = {
+  "python-pfs": "Mounts the Pelican federation as a filesystem-like interface, letting you list, open, and read files as if they were local paths.",
+  "python-osdf": "Same filesystem-style interface as PelicanFileSystem, pointed at the Open Science Data Federation instead of the general Pelican federation.",
+  "python-fsspec-pfs": "Registers Pelican as an fsspec backend, so any fsspec-aware library (pandas, xarray, Dask, etc.) can read straight from the federation.",
+  "python-fsspec-osdf": "Registers OSDF as an fsspec backend, giving fsspec-aware libraries direct read access to Open Science Data Federation paths.",
+  "python-local-storage": "Downloads the file(s) to a local destination path using the OSDF filesystem's get method, including nested directories.",
+  "python-xarray-osdf": "Opens the dataset directly into an xarray Dataset over OSDF for multi-dimensional array analysis.",
+  "python-xarray-map": "Wraps the dataset in a PelicanMap so xarray can open it lazily as a Zarr-backed Dataset without downloading it first.",
+  "python-pandas": "Streams a CSV file into a pandas DataFrame without downloading it to disk first.",
+  "python-pytorch-list": "Lists the files under a path using a torchdata IterableWrapper, useful for building a PyTorch dataset pipeline.",
+  "python-pytorch-stream": "Streams file contents directly into a PyTorch data pipeline, opening each file without a local download.",
+  "pelican-cli": "Downloads the file(s) to local disk from the terminal using the Pelican command-line client — no Python required.",
+};
+
 /**
  * Fetches datasets from datasets.json and for each datasets makes a new card
  * @returns {Promise<void}
@@ -207,7 +221,7 @@ function addDatasetCard(dataset) {
                   <span class="dataset-meta-badge ${dataset["streamable"] ? "dataset-meta-streamable" : "dataset-meta-static"}">
                     <i class="fa ${dataset["streamable"] ? "fa-bolt" : "fa-download"}"></i>${dataset["streamable"] ? "Streamable" : "Download only"}
                   </span>
-                  ${dataset["access"] ? `<span class="dataset-meta-badge dataset-meta-access"><i class="fa fa-lock"></i>${dataset["access"]}</span>` : ""}
+                  ${dataset["access"] ? `<span class="dataset-meta-badge dataset-meta-access"><i class="fa ${dataset["access"].toLowerCase() === "public" ? "fa-unlock" : "fa-lock"}"></i>${dataset["access"]}</span>` : ""}
                 </div>
             </div>
             <div class="dataset-card-content">
@@ -229,6 +243,7 @@ function addDatasetCard(dataset) {
                 <div class="dataset-snippet-header">
                   <div class="dataset-snippet-header-text-box">
                     <h1>Snippets</h1>
+                    <p class="dataset-snippet-explainer">Ready-to-use code for accessing this dataset with common tools and languages. Select an access pattern below, then copy the snippet into your own script or notebook.</p>
                   </div>
                   <div class ="dataset-snippet-header-split"></div>
                   <div class="dataset-snippet-selector-box">
@@ -238,6 +253,7 @@ function addDatasetCard(dataset) {
                   <div class="dataset-snippet-selector-content">
 
                   </div>
+                  <p class="dataset-snippet-option-description"></p>
                   </div>
                 <div class="dataset-snippet-wrapper">
                   <div class="fa fa-copy"></div>
@@ -839,6 +855,7 @@ function buildSnippets(snippetBox, dataset){
   const snippetSelectorText = snippetSelectorBox.querySelector(".dataset-snippet-selector-text")
   const snippetSelectorArrow = snippetSelectorBox.querySelector(".dataset-snippet-selector-arrow")
   const snippetSelectorContent = snippetHeader.querySelector(".dataset-snippet-selector-content")
+  const snippetOptionDescription = snippetHeader.querySelector(".dataset-snippet-option-description")
   const snippetCopy = snippetBox.querySelector(".fa-copy")
   snippetCopy.dataset.copyData = ""
   snippetSelectorText.textContent = "None"
@@ -864,6 +881,7 @@ function buildSnippets(snippetBox, dataset){
       snippetSelectorBox.dataset.toggled === 'true'
       snippetSelectorContent.classList.toggle("show")
       snippetSelectorText.textContent = name
+      snippetOptionDescription.textContent = snippetDescriptions[id] || ""
       changeSnippet(id, snippetCopy)
 
     })
