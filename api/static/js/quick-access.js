@@ -95,6 +95,20 @@ const snippetTemplates = {
   </code></pre>`,
 };
 
+const snippetDescriptions = {
+  "python-pfs": "Mounts the Pelican federation as a filesystem-like interface, letting you list, open, and read files as if they were local paths.",
+  "python-osdf": "Same filesystem-style interface as PelicanFileSystem, pointed at the Open Science Data Federation instead of the general Pelican federation.",
+  "python-fsspec-pfs": "Registers Pelican as an fsspec backend, so any fsspec-aware library (pandas, xarray, Dask, etc.) can read straight from the federation.",
+  "python-fsspec-osdf": "Registers OSDF as an fsspec backend, giving fsspec-aware libraries direct read access to Open Science Data Federation paths.",
+  "python-local-storage": "Downloads the file(s) to a local destination path using the OSDF filesystem's get method, including nested directories.",
+  "python-xarray-osdf": "Opens the dataset directly into an xarray Dataset over OSDF for multi-dimensional array analysis.",
+  "python-xarray-map": "Wraps the dataset in a PelicanMap so xarray can open it lazily as a Zarr-backed Dataset without downloading it first.",
+  "python-pandas": "Streams a CSV file into a pandas DataFrame without downloading it to disk first.",
+  "python-pytorch-list": "Lists the files under a path using a torchdata IterableWrapper, useful for building a PyTorch dataset pipeline.",
+  "python-pytorch-stream": "Streams file contents directly into a PyTorch data pipeline, opening each file without a local download.",
+  "pelican-cli": "Downloads the file(s) to local disk from the terminal using the Pelican command-line client — no Python required.",
+};
+
 
 const quickAccessInput = document.querySelector(".quick-access-input");
 const quickAccessSubmit = document.querySelector(".quick-access-submit");
@@ -183,6 +197,7 @@ function buildSnippets(path){
     <div class="dataset-snippet-header">
         <div class="dataset-snippet-header-text-box">
             <h1>Snippets</h1>
+            <p class="dataset-snippet-explainer">Ready-to-use code for accessing this path with common tools and languages. Select an access pattern below, then copy the snippet into your own script or notebook.</p>
         </div>
         <div class ="dataset-snippet-header-split"></div>
         <div class="dataset-snippet-selector-box">
@@ -190,6 +205,7 @@ function buildSnippets(path){
             <div class="dataset-snippet-selector-arrow"></div>
         </div>
         <div class="dataset-snippet-selector-content"></div>
+        <p class="dataset-snippet-option-description"></p>
         </div>
             <div class="dataset-snippet-wrapper">
             <div class="fa fa-copy"></div>
@@ -201,6 +217,7 @@ function buildSnippets(path){
         const snippetSelectorText = snippetSelectorBox.querySelector(".dataset-snippet-selector-text")
         const snippetSelectorArrow = snippetSelectorBox.querySelector(".dataset-snippet-selector-arrow")
         const snippetSelectorContent = snippetHeader.querySelector(".dataset-snippet-selector-content")
+        const snippetOptionDescription = snippetHeader.querySelector(".dataset-snippet-option-description")
         const snippetCopy = snippetWindow.querySelector(".fa-copy")
         snippetCopy.dataset.copyData = ""
         snippetSelectorText.textContent = "None"
@@ -227,6 +244,7 @@ function buildSnippets(path){
                 snippetSelectorBox.dataset.toggled === 'true'
                 snippetSelectorContent.classList.toggle("show")
                 snippetSelectorText.textContent = name
+                snippetOptionDescription.textContent = snippetDescriptions[id] || ""
                 changeSnippet(id, snippetCopy)
             })
         })
@@ -621,9 +639,12 @@ async function makeLocalDirectoryCards(root, path = "", browseLocalDirectoryCont
   const textParts = path.split("/").filter(Boolean);
   let firstPart = textParts[0] || "";
   const downloadLocation = textParts[textParts.length - 1];
-  const lastPart = textParts.length > 1 ? textParts[textParts.length - 1] : "";
   firstPart = firstPart.charAt(0).toUpperCase() + firstPart.slice(1);
-  const displayText = `${firstPart}/${lastPart}`;
+  const subParts = textParts.slice(1);
+  const displayText =
+    subParts.length > 2
+      ? `${firstPart} / … / ${subParts[subParts.length - 1]}`
+      : [firstPart, ...subParts].join(" / ");
   mediumLabel.textContent = displayText;
   downloadLocationLabel.textContent = ` Downloading in Folder: ${downloadLocation}`;
   const folders = await fetchLocalDirectory(path);

@@ -156,6 +156,22 @@
   font-weight:400;
   font-size:25px;
 }
+.dataset-snippet-explainer{
+  font-family: Poppins, sans-serif;
+  font-size: clamp(0.78rem, 0.72rem + 0.2vw, 0.85rem);
+  line-height: 1.5;
+  color: #999;
+  margin-top: 6px;
+  font-weight: 400;
+}
+.dataset-snippet-option-description{
+  font-family: Poppins, sans-serif;
+  font-size: clamp(0.78rem, 0.72rem + 0.2vw, 0.85rem);
+  line-height: 1.5;
+  color: #999;
+  margin-top: 10px;
+  min-height: 0;
+}
 
 .dataset-snippet-header-text{
   font-family: var(--primary-font);

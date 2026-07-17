@@ -266,6 +266,11 @@ function addDatasetCard(dataset) {
                         <div class="file-browser-header-split"></div>
                         <div class="file-browser-breadcrumbs"></div>
                     </div>
+                    <label class="file-browser-select-all">
+                      <input type="checkbox" class="folder-checkbox file-browser-select-all-checkbox"></input>
+                      <span class="folder-checkbox-custom"></span>
+                      <span class="file-browser-select-all-label">Select All</span>
+                    </label>
                     <div class="file-browser-directory-container"></div>
                     <div class="file-browser-download-container">
                         <div class="file-browser-download-button">
@@ -296,12 +301,25 @@ function addDatasetCard(dataset) {
     );
     const header = newCard.querySelector(".dataset-card-top");
     const snippets = newCard.querySelector(".dataset-card-content").querySelector(".dataset-snippet-container")
+    const selectAllCheckbox = newCard.querySelector(".file-browser-select-all-checkbox");
     file_container.downloadPaths = new Map();
     file_container.downloadAmount = file_container.downloadPaths.size;
+    file_container.selectAllCheckbox = selectAllCheckbox;
     download_button.addEventListener("click", (event) => {
       // still need to add path looping for downloading in overlay
       console.log(file_container.downloadPaths);
       download_file(file_container, file_container.downloadPaths);
+    });
+
+    selectAllCheckbox.addEventListener("change", (event) => {
+      const checked = event.target.checked;
+      const rowCheckboxes = file_container.querySelectorAll(".folder-checkbox:not(:disabled)");
+      rowCheckboxes.forEach((checkbox) => {
+        if (checkbox.checked !== checked) {
+          checkbox.checked = checked;
+          checkbox.dispatchEvent(new Event("change"));
+        }
+      });
     });
 
     
@@ -367,6 +385,9 @@ function loadDirectory(path, container, breadcrumbs, download_card) {
   
   container.innerHTML = "";
   breadcrumbs.innerHTML = "";
+  if (container.selectAllCheckbox) {
+    container.selectAllCheckbox.checked = false;
+  }
 
   makeBreadcrumbs(breadcrumbs, container, download_card);
   makeFolderCards(path, container, download_card, breadcrumbs);
@@ -792,9 +813,12 @@ async function makeLocalDirectoryCards(root, path = "", browseLocalDirectoryCont
   const textParts = path.split("/").filter(Boolean);
   let firstPart = textParts[0] || "";
   const downloadLocation = textParts[textParts.length - 1];
-  const lastPart = textParts.length > 1 ? textParts[textParts.length - 1] : "";
   firstPart = firstPart.charAt(0).toUpperCase() + firstPart.slice(1);
-  const displayText = `${firstPart}/${lastPart}`;
+  const subParts = textParts.slice(1);
+  const displayText =
+    subParts.length > 2
+      ? `${firstPart} / … / ${subParts[subParts.length - 1]}`
+      : [firstPart, ...subParts].join(" / ");
   mediumLabel.textContent = displayText;
   downloadLocationLabel.textContent = `Downloading in Folder: ${downloadLocation}`;
   const folders = await fetchLocalDirectory(path);

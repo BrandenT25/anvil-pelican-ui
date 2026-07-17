@@ -516,6 +516,24 @@ clamp(s_1px, calc(b + (m*100)vw), s_2px)
   margin-bottom: 1rem;
 }
 
+.file-browser-select-all {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 1rem 0.5rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.file-browser-select-all:hover .folder-checkbox-custom {
+  border-color: #cfb991;
+}
+.file-browser-select-all-label {
+  font-family: Poppins, sans-serif;
+  font-size: clamp(0.78rem, 0.72rem + 0.2vw, 0.85rem);
+  color: #999;
+}
+
 .file-browser-directory-container {
   display: flex;
   width: 100%;
