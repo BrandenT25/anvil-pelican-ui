@@ -72,26 +72,25 @@
     border-bottom-color: #cfb991;
 }
 .navbar-downloads-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    /* same weight/sizing/padding/hover mechanics as .navbar-link — color is
+       necessarily different since this one sits on the tan background
+       (.home-navbar-right) instead of black, so white/tan would be unreadable
+       or invisible on hover; #1a1a1a matches the existing on-tan convention
+       used elsewhere (e.g. .directory-download-button) */
     flex-shrink: 0;
-    /* padding pads the tap target without growing the icon itself —
-       an icon-only link this small needs a bigger hit area than its
-       visible glyph, especially on touch */
-    padding: 8px;
-    margin: -8px;
+    white-space: nowrap;
+    font-family: Poppins, sans-serif;
+    font-size: clamp(13px, 3.33px + 0.9115vw, 22px);
     color: #1a1a1a;
-    opacity: 0.6;
-    transition: opacity 0.15s ease;
+    text-decoration: none;
+    padding: 6px 2px;
+    border-bottom: 2px solid transparent;
+    opacity: 0.75;
+    transition: opacity 0.15s ease, border-bottom-color 0.15s ease;
 }
 .navbar-downloads-link:hover {
     opacity: 1;
-}
-.navbar-downloads-icon {
-    display: block;
-    width: clamp(16px, 6.6px + 0.833vw, 24px);
-    height: clamp(16px, 6.6px + 0.833vw, 24px);
+    border-bottom-color: #1a1a1a;
 }
 .navbar-purdue-logo {
     display: flex;
@@ -134,9 +133,9 @@
         gap: 8px;
         padding: 0 10px;
     }
-    .navbar-downloads-icon {
-        width: 16px;
-        height: 16px;
+    .navbar-downloads-link {
+        font-size: 12px;
+        padding: 4px 0;
     }
     .navbar-purdue-logo img {
         height: 26px;

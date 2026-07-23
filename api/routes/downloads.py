@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import sqlite3, os
+import sqlite3, os, json
 from datetime import datetime, timezone
 from api.core.config import DOWNLOADS_DB_PATH
 
@@ -31,6 +31,11 @@ def _init_db():
             error_message TEXT
         )"""
     )
+    # files wasn't in the original schema — add it for rows created before
+    # this column existed rather than requiring a fresh DB
+    existing_columns = {row["name"] for row in cur.execute("PRAGMA table_info(download_history)")}
+    if "files" not in existing_columns:
+        cur.execute("ALTER TABLE download_history ADD COLUMN files TEXT")
     con.commit()
     con.close()
 
@@ -44,9 +49,15 @@ class DownloadStart(BaseModel):
     item_count: int
 
 
+class DownloadFileEntry(BaseModel):
+    path: str
+    status: str
+
+
 class DownloadFinish(BaseModel):
     status: str
     error_message: str | None = None
+    files: list[DownloadFileEntry] | None = None
 
 
 @downloadsRouter.post("/downloads/history/start")
@@ -71,9 +82,10 @@ async def finishDownloadRecord(record_id: int, payload: DownloadFinish):
     con = _get_connection()
     cur = con.cursor()
     finished_at = datetime.now(timezone.utc).isoformat()
+    files_json = json.dumps([f.model_dump() for f in payload.files]) if payload.files is not None else None
     cur.execute(
-        "UPDATE download_history SET status = ?, finished_at = ?, error_message = ? WHERE id = ?",
-        (payload.status, finished_at, payload.error_message, record_id),
+        "UPDATE download_history SET status = ?, finished_at = ?, error_message = ?, files = ? WHERE id = ?",
+        (payload.status, finished_at, payload.error_message, files_json, record_id),
     )
     con.commit()
     updated = cur.rowcount
@@ -90,4 +102,9 @@ async def listDownloadHistory():
     cur.execute("SELECT * FROM download_history ORDER BY started_at DESC")
     rows = cur.fetchall()
     con.close()
-    return [dict(row) for row in rows]
+    result = []
+    for row in rows:
+        entry = dict(row)
+        entry["files"] = json.loads(entry["files"]) if entry.get("files") else []
+        result.append(entry)
+    return result

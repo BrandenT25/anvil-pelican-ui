@@ -845,15 +845,16 @@ function download_file(container, download_paths, sourceName) {
         showToast("Select at least one file or folder first.", "error");
         return;
       }
-      downloadButton.classList.add("disabled");
-      downloadButton.querySelector("span").textContent = "Downloading...";
-      downloadResult.style.display = "none";
-      downloadResult.innerHTML = "";
+
+      // hand off immediately rather than making the user babysit this modal —
+      // the download keeps running in the background and reports its outcome
+      // via a second toast (from renderDownloadResult below) when it's done
+      closeSelector(fileSelectorOverlay);
+      showToast("Download started.", "success", 6000, {
+        action: { label: "View Downloads", href: `${window.ROOT_PATH}/downloads` },
+      });
 
       const result = await downloadFromPath(mediumDirectory.downloadPath, download_paths, sourceName);
-
-      downloadButton.classList.remove("disabled");
-      downloadButton.querySelector("span").textContent = "Download";
       renderDownloadResult(downloadResult, result);
     });
     fileSelectorOverlay.appendChild(fileSelector);
@@ -1047,14 +1048,17 @@ async function recordDownloadStart(name, destination, itemCount) {
   }
 }
 
-/** Updates the downloads-history row written by recordDownloadStart. Best-effort, same as above. */
-async function recordDownloadFinish(recordId, status, errorMessage) {
+/**
+ * Updates the downloads-history row written by recordDownloadStart. Best-effort, same as above.
+ * @param {Array<{path: string, status: "succeeded"|"failed"}>} [files]
+ */
+async function recordDownloadFinish(recordId, status, errorMessage, files) {
   if (recordId === null || recordId === undefined) return;
   try {
     await fetch(`${window.ROOT_PATH}/downloads/history/${recordId}/finish`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status, error_message: errorMessage }),
+      body: JSON.stringify({ status, error_message: errorMessage, files }),
     });
   } catch (error) {
     console.log("recording download finish failed", error);
@@ -1102,7 +1106,11 @@ async function downloadFromPath(file, paths, sourceName) {
 
   const historyStatus = failed.length === 0 ? "complete" : succeeded.length === 0 ? "failed" : "partial";
   const historyError = failed.length === 0 ? null : `${failed.length} of ${succeeded.length + failed.length} item(s) failed to download.`;
-  await recordDownloadFinish(historyId, historyStatus, historyError);
+  const historyFiles = [
+    ...succeeded.map((path) => ({ path, status: "succeeded" })),
+    ...failed.map((path) => ({ path, status: "failed" })),
+  ];
+  await recordDownloadFinish(historyId, historyStatus, historyError, historyFiles);
 
   // OOD's file browser is served from the same origin pelican-ui runs
   // under (per the OOD sandbox app pattern), so window.location.origin

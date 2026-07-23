@@ -34,6 +34,31 @@ function buildOodUrl(destination) {
   return `${window.location.origin}/pun/sys/dashboard/files/fs${destination.split("/").map(encodeURIComponent).join("/")}`;
 }
 
+// path -> just the last segment, for a compact per-file label; the full
+// path is still available via the title attribute on hover
+function baseName(path) {
+  return path.split("/").filter(Boolean).pop() || path;
+}
+
+function renderFileList(files) {
+  if (!files || files.length === 0) return "";
+  const rows = files
+    .map(
+      (file) => `
+        <li class="downloads-entry-file downloads-entry-file-${file.status}" title="${escapeHtml(file.path)}">
+          <i class="fa ${file.status === "succeeded" ? "fa-check" : "fa-times"}"></i>
+          <span>${escapeHtml(baseName(file.path))}</span>
+        </li>`,
+    )
+    .join("");
+  return /* html */ `
+    <details class="downloads-entry-files">
+      <summary class="downloads-entry-files-summary">Show files (${files.length})</summary>
+      <ul class="downloads-entry-files-list">${rows}</ul>
+    </details>
+  `;
+}
+
 function renderEntry(entry) {
   const card = document.createElement("div");
   card.className = "downloads-entry";
@@ -53,6 +78,7 @@ function renderEntry(entry) {
       ${entry.finished_at ? `<span>Finished ${formatTimestamp(entry.finished_at)}</span>` : ""}
     </div>
     ${entry.error_message ? `<div class="downloads-entry-error"><i class="fa fa-exclamation-circle"></i> ${escapeHtml(entry.error_message)}</div>` : ""}
+    ${renderFileList(entry.files)}
     ${showOodLink ? `<a class="downloads-entry-ood-link" href="${buildOodUrl(entry.destination)}" target="_blank" rel="noopener noreferrer"><i class="fa fa-external-link"></i> Open in File Browser</a>` : ""}
   `;
   return card;
