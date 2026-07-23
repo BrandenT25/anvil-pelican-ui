@@ -176,9 +176,13 @@ function applyDatasetFilter(query) {
   });
   const emptyBox = document.querySelector(".dataset-search-empty");
   const emptyBoxClear = emptyBox.querySelector(".dataset-search-empty-clear");
+  const status = document.querySelector(".dataset-search-status");
   emptyBox.style.display = visibleCount === 0 ? "block" : "none";
-  // only worth offering "clear search" when there was actually a query to clear
-  emptyBoxClear.style.display = visibleCount === 0 && cleanedQuery ? "block" : "none";
+  // only worth offering "clear search" when there was actually a query to clear,
+  // and not when the "Showing results for" banner is already showing its own
+  // clear control (arriving from a Categories-page search) — otherwise both render
+  const statusVisible = status.style.display === "flex";
+  emptyBoxClear.style.display = visibleCount === 0 && cleanedQuery && !statusVisible ? "block" : "none";
 }
 
 /**
