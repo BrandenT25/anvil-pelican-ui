@@ -60,6 +60,30 @@ function renderFileList(files) {
   `;
 }
 
+/**
+ * Best-effort DELETE of a download-history record. Best-effort in the same
+ * sense as the rest of this page's fetches: the caller decides how to react
+ * to failure (a toast), this just normalizes the result shape.
+ * @returns {Promise<{ok: boolean, error?: string}>}
+ */
+async function deleteDownloadRecord(id) {
+  try {
+    const response = await fetch(`${window.ROOT_PATH}/downloads/history/${id}`, { method: "DELETE" });
+    if (!response.ok) {
+      let detail = `HTTP error! status ${response.status}`;
+      try {
+        const body = await response.json();
+        if (body && body.detail) detail = body.detail;
+      } catch (_) {}
+      return { ok: false, error: detail };
+    }
+    return { ok: true };
+  } catch (error) {
+    console.log("deleting download record failed", error);
+    return { ok: false, error: "Couldn't reach the server. Try again." };
+  }
+}
+
 function renderEntry(entry) {
   const card = document.createElement("div");
   card.className = "downloads-entry";
@@ -70,7 +94,12 @@ function renderEntry(entry) {
   card.innerHTML = /* html */ `
     <div class="downloads-entry-top">
       <span class="downloads-entry-name">${escapeHtml(entry.name)}</span>
-      <span class="downloads-entry-status downloads-entry-status-${entry.status}">${statusLabel(entry.status)}</span>
+      <div class="downloads-entry-top-right">
+        <span class="downloads-entry-status downloads-entry-status-${entry.status}">${statusLabel(entry.status)}</span>
+        <button class="downloads-entry-delete" title="Delete this download from history" aria-label="Delete download record">
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
     </div>
     <div class="downloads-entry-destination">${escapeHtml(entry.destination)}</div>
     <div class="downloads-entry-meta">
@@ -82,6 +111,30 @@ function renderEntry(entry) {
     <div class="downloads-entry-files-slot">${renderFileList(entry.files)}</div>
     ${showOodLink ? `<a class="downloads-entry-ood-link" href="${buildOodUrl(entry.destination)}" target="_blank" rel="noopener noreferrer"><i class="fa fa-external-link"></i> Open in File Browser</a>` : ""}
   `;
+
+  const deleteBtn = card.querySelector(".downloads-entry-delete");
+  deleteBtn.addEventListener("click", async () => {
+    deleteBtn.disabled = true;
+    const result = await deleteDownloadRecord(entry.id);
+    if (!result.ok) {
+      showToast(result.error || "Couldn't delete this download. Try again.", "error");
+      deleteBtn.disabled = false;
+      return;
+    }
+    // covers the in_progress case too — the job row backing this card's
+    // polling is gone server-side now, so stop polling it here rather than
+    // waiting for the next poll's 404 to notice
+    stopCardPolling(card);
+    card.remove();
+    const list = document.querySelector(".downloads-list");
+    if (list && list.children.length === 0) {
+      const emptyState = document.querySelector(".downloads-empty-state");
+      const emptyStateText = emptyState.querySelector(".downloads-empty-state-text");
+      emptyStateText.textContent = "No downloads yet. Files you download from Explore Datasets or Quick Access will show up here.";
+      emptyState.style.display = "flex";
+    }
+  });
+
   return card;
 }
 
@@ -93,22 +146,34 @@ const DOWNLOAD_JOB_TERMINAL_STATUSES = ["complete", "partial", "failed"];
 // cards that no longer exist in the DOM
 let activePollHandles = [];
 
+function stopCardPolling(card) {
+  if (card._pollHandle) {
+    clearInterval(card._pollHandle);
+    activePollHandles = activePollHandles.filter((h) => h !== card._pollHandle);
+    card._pollHandle = null;
+  }
+}
+
 /**
  * Polls a single in-progress card's job status every 2s and swaps in the
  * live per-file list (done/not yet downloaded/failed), sourced from
  * download_jobs via the same status endpoint datasets.js/quick-access.js
  * already poll while starting a download. Stops once the job reaches a
- * terminal state. Only the file disclosure is updated in place — the rest
- * of the card (badge, timestamps, OOD link) still reflects what was true on
- * last page load/Refresh, by design.
+ * terminal state, or as soon as the job 404s (its record was deleted — see
+ * deleteDownloadRecord/the delete button above). Only the file disclosure is
+ * updated in place — the rest of the card (badge, timestamps, OOD link)
+ * still reflects what was true on last page load/Refresh, by design.
  * @param {HTMLElement} card
  * @param {string} jobId
  */
 function startCardPolling(card, jobId) {
-  let handle;
   const poll = async () => {
     try {
       const response = await fetch(`${window.ROOT_PATH}/datasets/download/status/${jobId}`, { cache: "no-store" });
+      if (response.status === 404) {
+        stopCardPolling(card);
+        return;
+      }
       if (!response.ok) return;
       const job = await response.json();
       const slot = card.querySelector(".downloads-entry-files-slot");
@@ -121,16 +186,15 @@ function startCardPolling(card, jobId) {
         if (details && wasOpen) details.open = true;
       }
       if (DOWNLOAD_JOB_TERMINAL_STATUSES.includes(job.status)) {
-        clearInterval(handle);
-        activePollHandles = activePollHandles.filter((h) => h !== handle);
+        stopCardPolling(card);
       }
     } catch (error) {
       console.log("polling job status failed for", jobId, error);
     }
   };
   poll();
-  handle = setInterval(poll, DOWNLOAD_JOB_POLL_INTERVAL_MS);
-  activePollHandles.push(handle);
+  card._pollHandle = setInterval(poll, DOWNLOAD_JOB_POLL_INTERVAL_MS);
+  activePollHandles.push(card._pollHandle);
 }
 
 async function loadDownloadHistory() {

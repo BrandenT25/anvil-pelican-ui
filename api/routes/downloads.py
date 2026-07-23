@@ -266,3 +266,28 @@ async def listDownloadHistory():
         entry["files"] = json.loads(entry["files"]) if entry.get("files") else []
         result.append(entry)
     return result
+
+
+@downloadsRouter.delete("/downloads/history/{record_id}")
+async def deleteDownloadRecord(record_id: int):
+    # Deleting an in_progress entry is allowed, not just terminal ones. The
+    # background thread (_run_download_job) has no safe way to be cancelled
+    # mid-transfer — Python doesn't support killing a thread from outside it
+    # — so it keeps running to completion regardless. What matters is that it
+    # stops being able to do anything visible once its row is gone: its job
+    # row is deleted here too (not just the history row), so its remaining
+    # _update_job/_finish_history_record calls become no-op UPDATEs (0 rows
+    # matched, no error) instead of resurrecting a deleted entry, and the
+    # status endpoint starts 404ing for that job_id — which the Downloads
+    # page's poll loop already treats as "stop polling this card".
+    with _db_write_lock:
+        con = _get_connection()
+        cur = con.cursor()
+        cur.execute("DELETE FROM download_jobs WHERE history_id = ?", (record_id,))
+        cur.execute("DELETE FROM download_history WHERE id = ?", (record_id,))
+        deleted = cur.rowcount
+        con.commit()
+        con.close()
+    if deleted == 0:
+        raise HTTPException(status_code=404, detail="Download record not found.")
+    return {"status": "success"}
