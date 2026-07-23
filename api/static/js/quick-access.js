@@ -729,54 +729,29 @@ async function makeLocalDirectoryCards(root, path = "", browseLocalDirectoryCont
   });
 }
 
-/**
- * Writes a local downloads-history row when a download starts. Best-effort:
- * a history-write failure must never block or corrupt the actual download,
- * so failures here are swallowed and just return null (recordDownloadFinish
- * no-ops on a null id).
- * @returns {Promise<number|null>}
- */
-async function recordDownloadStart(name, destination, itemCount) {
-  try {
-    const response = await fetch(`${window.ROOT_PATH}/downloads/history/start`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, destination, item_count: itemCount }),
-    });
-    if (!response.ok) return null;
-    const data = await response.json();
-    return data.id;
-  } catch (error) {
-    console.log("recording download start failed", error);
-    return null;
-  }
-}
+// How often to poll the job-status endpoint, and a hard cap on attempts so
+// the UI always eventually resolves even if a job hangs forever (e.g. the
+// Passenger worker running its background thread got recycled mid-transfer —
+// see the note on downloadFromPath below). 1.5s * 800 =~ 20 minutes.
+const DOWNLOAD_POLL_INTERVAL_MS = 1500;
+const DOWNLOAD_POLL_MAX_ATTEMPTS = 800;
+const DOWNLOAD_TERMINAL_STATUSES = ["complete", "partial", "failed"];
 
 /**
- * Updates the downloads-history row written by recordDownloadStart. Best-effort, same as above.
- * @param {Array<{path: string, status: "succeeded"|"failed"}>} [files]
- */
-async function recordDownloadFinish(recordId, status, errorMessage, files) {
-  if (recordId === null || recordId === undefined) return;
-  try {
-    await fetch(`${window.ROOT_PATH}/downloads/history/${recordId}/finish`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status, error_message: errorMessage, files }),
-    });
-  } catch (error) {
-    console.log("recording download finish failed", error);
-  }
-}
-
-/**
- * Downloads every selected path into the destination folder, one request at
- * a time, actually waiting on each so success/failure is known before the
- * caller reports back to the user (previously these fetches were fired
- * without awaiting, so the UI had no way to tell if anything worked). Also
- * records the attempt in the local downloads-history DB, reusing this same
- * succeeded/failed tracking as the completion signal rather than adding a
- * second, parallel one.
+ * Starts a background download job on the server and polls its status until
+ * it finishes, instead of holding a single request open for the whole
+ * transfer (the server now returns from /datasets/download/start almost
+ * immediately — the actual osdf.get() work happens on a background thread,
+ * see api/routes/downloads.py). This is what fixes large/multi-file batches
+ * failing with a NetworkError: no request is held open long enough to hit a
+ * proxy/timeout limit regardless of file size or batch size.
+ *
+ * Known tradeoff of running this as an in-process background thread rather
+ * than an external job queue: if the Passenger worker process running the
+ * job thread gets recycled mid-transfer, the thread dies with it and the job
+ * is left stuck at "in_progress" with a partial file on disk. The poll loop
+ * below still resolves for the user (via DOWNLOAD_POLL_MAX_ATTEMPTS), just
+ * reporting whatever finished as succeeded and the rest as failed.
  * @param {string} file - medium + subfolder path, e.g. "project/x-abc/data"
  * @param {Map<string,string>} paths - path -> type, from container.downloadPaths
  * @param {string} [sourceName] - human-readable name of what's being downloaded
@@ -788,38 +763,45 @@ async function downloadFromPath(file, paths, sourceName) {
   const resolved_root = rootPaths[root];
   parts[0] = resolved_root;
   const fullPath = parts.join("/");
+  const oodUrl = `${window.location.origin}/pun/sys/dashboard/files/fs${fullPath.split("/").map(encodeURIComponent).join("/")}`;
+  const pathList = Array.from(paths.keys());
 
-  const historyId = await recordDownloadStart(sourceName || fullPath, fullPath, paths.size);
+  let job;
+  try {
+    const response = await fetch(`${window.ROOT_PATH}/datasets/download/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: sourceName || fullPath, destination: fullPath, paths: pathList }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status ${response.status}`);
+    }
+    job = await response.json();
+  } catch (error) {
+    console.log("starting download job failed", error);
+    return { succeeded: [], failed: pathList, destination: fullPath, oodUrl };
+  }
 
-  const succeeded = [];
-  const failed = [];
-  for (const [path] of paths) {
+  let status = job;
+  for (let attempt = 0; attempt < DOWNLOAD_POLL_MAX_ATTEMPTS; attempt++) {
+    if (DOWNLOAD_TERMINAL_STATUSES.includes(status.status)) break;
+    await new Promise((resolve) => setTimeout(resolve, DOWNLOAD_POLL_INTERVAL_MS));
     try {
-      const response = await fetch(
-        `${window.ROOT_PATH}/datasets/download?storageLocation=${fullPath}&filepath=${path}`,
-      );
+      const response = await fetch(`${window.ROOT_PATH}/datasets/download/status/${job.job_id}`, { cache: "no-store" });
       if (!response.ok) {
         throw new Error(`HTTP error! status ${response.status}`);
       }
-      succeeded.push(path);
+      status = await response.json();
     } catch (error) {
-      console.log("download failed for", path, error);
-      failed.push(path);
+      // transient hiccup while polling — the job may still be completing
+      // fine server-side, so keep trying rather than giving up on it
+      console.log("polling download job failed", error);
     }
   }
 
-  const historyStatus = failed.length === 0 ? "complete" : succeeded.length === 0 ? "failed" : "partial";
-  const historyError = failed.length === 0 ? null : `${failed.length} of ${succeeded.length + failed.length} item(s) failed to download.`;
-  const historyFiles = [
-    ...succeeded.map((path) => ({ path, status: "succeeded" })),
-    ...failed.map((path) => ({ path, status: "failed" })),
-  ];
-  await recordDownloadFinish(historyId, historyStatus, historyError, historyFiles);
-
-  // OOD's file browser is served from the same origin pelican-ui runs
-  // under (per the OOD sandbox app pattern), so window.location.origin
-  // gives the right base without hardcoding the cluster's OOD hostname
-  const oodUrl = `${window.location.origin}/pun/sys/dashboard/files/fs${fullPath.split("/").map(encodeURIComponent).join("/")}`;
+  const files = status.files || [];
+  const succeeded = files.filter((f) => f.status === "succeeded").map((f) => f.path);
+  const failed = files.filter((f) => f.status !== "succeeded").map((f) => f.path);
 
   return { succeeded, failed, destination: fullPath, oodUrl };
 }
