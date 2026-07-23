@@ -43,13 +43,14 @@ function baseName(path) {
 function renderFileList(files) {
   if (!files || files.length === 0) return "";
   const rows = files
-    .map(
-      (file) => `
+    .map((file) => {
+      const icon = file.status === "succeeded" ? "fa-check" : file.status === "failed" ? "fa-times" : "fa-circle-o";
+      return `
         <li class="downloads-entry-file downloads-entry-file-${file.status}" title="${escapeHtml(file.path)}">
-          <i class="fa ${file.status === "succeeded" ? "fa-check" : "fa-times"}"></i>
+          <i class="fa ${icon}"></i>
           <span>${escapeHtml(baseName(file.path))}</span>
-        </li>`,
-    )
+        </li>`;
+    })
     .join("");
   return /* html */ `
     <details class="downloads-entry-files">
@@ -78,16 +79,66 @@ function renderEntry(entry) {
       ${entry.finished_at ? `<span>Finished ${formatTimestamp(entry.finished_at)}</span>` : ""}
     </div>
     ${entry.error_message ? `<div class="downloads-entry-error"><i class="fa fa-exclamation-circle"></i> ${escapeHtml(entry.error_message)}</div>` : ""}
-    ${renderFileList(entry.files)}
+    <div class="downloads-entry-files-slot">${renderFileList(entry.files)}</div>
     ${showOodLink ? `<a class="downloads-entry-ood-link" href="${buildOodUrl(entry.destination)}" target="_blank" rel="noopener noreferrer"><i class="fa fa-external-link"></i> Open in File Browser</a>` : ""}
   `;
   return card;
+}
+
+const DOWNLOAD_JOB_POLL_INTERVAL_MS = 2000;
+const DOWNLOAD_JOB_TERMINAL_STATUSES = ["complete", "partial", "failed"];
+
+// setInterval handles for every card currently polling its in-progress job,
+// so a Refresh click (which rebuilds the whole list) doesn't leak polls for
+// cards that no longer exist in the DOM
+let activePollHandles = [];
+
+/**
+ * Polls a single in-progress card's job status every 2s and swaps in the
+ * live per-file list (done/not yet downloaded/failed), sourced from
+ * download_jobs via the same status endpoint datasets.js/quick-access.js
+ * already poll while starting a download. Stops once the job reaches a
+ * terminal state. Only the file disclosure is updated in place — the rest
+ * of the card (badge, timestamps, OOD link) still reflects what was true on
+ * last page load/Refresh, by design.
+ * @param {HTMLElement} card
+ * @param {string} jobId
+ */
+function startCardPolling(card, jobId) {
+  let handle;
+  const poll = async () => {
+    try {
+      const response = await fetch(`${window.ROOT_PATH}/datasets/download/status/${jobId}`, { cache: "no-store" });
+      if (!response.ok) return;
+      const job = await response.json();
+      const slot = card.querySelector(".downloads-entry-files-slot");
+      if (slot) {
+        // preserve whether the user had the disclosure open across the swap —
+        // otherwise it'd yank itself shut every 2s while being watched
+        const wasOpen = slot.querySelector("details")?.open ?? false;
+        slot.innerHTML = renderFileList(job.files);
+        const details = slot.querySelector("details");
+        if (details && wasOpen) details.open = true;
+      }
+      if (DOWNLOAD_JOB_TERMINAL_STATUSES.includes(job.status)) {
+        clearInterval(handle);
+        activePollHandles = activePollHandles.filter((h) => h !== handle);
+      }
+    } catch (error) {
+      console.log("polling job status failed for", jobId, error);
+    }
+  };
+  poll();
+  handle = setInterval(poll, DOWNLOAD_JOB_POLL_INTERVAL_MS);
+  activePollHandles.push(handle);
 }
 
 async function loadDownloadHistory() {
   const list = document.querySelector(".downloads-list");
   const emptyState = document.querySelector(".downloads-empty-state");
   const emptyStateText = emptyState.querySelector(".downloads-empty-state-text");
+  activePollHandles.forEach(clearInterval);
+  activePollHandles = [];
   list.innerHTML = "";
   try {
     const response = await fetch(`${window.ROOT_PATH}/downloads/history`);
@@ -102,7 +153,11 @@ async function loadDownloadHistory() {
     }
     emptyState.style.display = "none";
     history.forEach((entry) => {
-      list.appendChild(renderEntry(entry));
+      const card = renderEntry(entry);
+      list.appendChild(card);
+      if (entry.status === "in_progress" && entry.job_id) {
+        startCardPolling(card, entry.job_id);
+      }
     });
   } catch (error) {
     console.log("loading download history failed", error);

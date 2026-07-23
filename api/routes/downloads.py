@@ -248,7 +248,16 @@ async def getDownloadJobStatus(job_id: str):
 async def listDownloadHistory():
     con = _get_connection()
     cur = con.cursor()
-    cur.execute("SELECT * FROM download_history ORDER BY started_at DESC")
+    # LEFT JOIN in job_id so the Downloads page can poll
+    # /datasets/download/status/{job_id} for any row still in_progress to get
+    # live per-file state (download_jobs tracks that; download_history.files
+    # is only populated once a job reaches a terminal state).
+    cur.execute(
+        """SELECT h.*, j.job_id AS job_id
+           FROM download_history h
+           LEFT JOIN download_jobs j ON j.history_id = h.id
+           ORDER BY h.started_at DESC"""
+    )
     rows = cur.fetchall()
     con.close()
     result = []

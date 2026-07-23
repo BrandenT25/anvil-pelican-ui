@@ -160,6 +160,9 @@ a {
   line-height: 1.4;
 }
 
+.downloads-entry-files-slot {
+  min-width: 0;
+}
 .downloads-entry-files {
   min-width: 0;
 }
@@ -233,6 +236,9 @@ a {
 }
 .downloads-entry-file-failed .fa {
   color: #e24b4a;
+}
+.downloads-entry-file-pending .fa {
+  color: #999;
 }
 
 .downloads-entry-ood-link {
