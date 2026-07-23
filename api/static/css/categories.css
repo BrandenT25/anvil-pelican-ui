@@ -68,10 +68,20 @@ a {
 .category-card-container{
     width:100%;
     display:grid;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    grid-template-columns: repeat(4, minmax(15rem, 1fr));
     grid-auto-rows: min-content;
     gap: 1.25rem;
     min-width: 0;
+}
+@media (max-width: 900px) {
+    .category-card-container {
+        grid-template-columns: repeat(2, minmax(15rem, 1fr));
+    }
+}
+@media (max-width: 600px) {
+    .category-card-container {
+        grid-template-columns: repeat(1, minmax(15rem, 1fr));
+    }
 }
 .category-card{
     background-color: #1a1a1a;

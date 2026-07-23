@@ -276,11 +276,24 @@ function buildBrowser(path){
     const clearButton = document.querySelector(".file-browser-download-clear")
     const downloadAmount = document.querySelector(".file-browser-download-amount")
     const download_button = document.querySelector(".file-browser-download-button");
+    const selectAllCheckbox = document.querySelector(".file-browser-select-all-checkbox");
     file_container.downloadPaths = new Map();
     file_container.downloadAmount = file_container.downloadPaths.size;
-    file_container.downloadSize = 0;   
+    file_container.downloadSize = 0;
+    file_container.selectAllCheckbox = selectAllCheckbox;
     loadDirectory(path, file_container, breadcrumbs, download_card)
-    
+
+    selectAllCheckbox.addEventListener("change", (event) => {
+      const checked = event.target.checked;
+      const rowCheckboxes = file_container.querySelectorAll(".folder-checkbox:not(:disabled)");
+      rowCheckboxes.forEach((checkbox) => {
+        if (checkbox.checked !== checked) {
+          checkbox.checked = checked;
+          checkbox.dispatchEvent(new Event("change"));
+        }
+      });
+    });
+
     clearButton.addEventListener("click", ()=>{
       file_container.downloadPaths.clear()
       updateSelectionAmountBox(file_container, downloadAmount)
@@ -305,6 +318,9 @@ function loadDirectory(path, container, breadcrumbs, download_card) {
     }
     container.innerHTML = "";
     breadcrumbs.innerHTML = "";
+    if (container.selectAllCheckbox) {
+        container.selectAllCheckbox.checked = false;
+    }
     makeBreadcrumbs(breadcrumbs, container, download_card);
     makeFolderCards(path, container, download_card, breadcrumbs);
 }

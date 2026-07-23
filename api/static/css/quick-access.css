@@ -371,6 +371,27 @@
   margin-bottom: 1rem;
 }
 
+.file-browser-select-all {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* left padding matches the row checkboxes' combined inset: 1rem from
+     .file-browser-directory-container's padding + 1rem from
+     .file-browser-directory-folder's own padding */
+  padding: 0 1rem 0.5rem 2rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.file-browser-select-all:hover .folder-checkbox-custom {
+  border-color: #cfb991;
+}
+.file-browser-select-all-label {
+  font-family: Poppins, sans-serif;
+  font-size: clamp(0.78rem, 0.72rem + 0.2vw, 0.85rem);
+  color: #999;
+}
+
 .file-browser-directory-container {
   display: flex;
   width: 100%;
