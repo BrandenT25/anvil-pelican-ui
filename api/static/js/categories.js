@@ -1,16 +1,26 @@
 
 async function fetchCategories(){
+    const emptyState = document.querySelector(".category-empty-state");
+    const emptyStateText = emptyState ? emptyState.querySelector(".category-empty-state-text") : null;
     try{
         const response = await fetch(`${ROOT_PATH}/retrieve-categories`);
         if(!response.ok){
             throw new Error(`HTTP ERROR! Status ${response.status}`);
         }
         const categories = await response.json();
+        if(categories.length === 0){
+            if(emptyStateText) emptyStateText.textContent = "No categories have been added yet.";
+            if(emptyState) emptyState.style.display = "flex";
+            return;
+        }
         categories.forEach(category => {
             addCategoryCard(category);
         })
     }catch (error){
         console.log('Fetching categories failed: ', error);
+        showToast("Couldn't load categories. Try refreshing the page.", "error");
+        if(emptyStateText) emptyStateText.textContent = "Something went wrong loading categories.";
+        if(emptyState) emptyState.style.display = "flex";
     }
 }
 async function addCategoryCard(category){

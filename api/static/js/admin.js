@@ -47,7 +47,12 @@ async function displayDataset(toggle){
                 displayDataset(true)
             })
             removeBtn.addEventListener("click", async ()=>{
-                await removeDataset(datasetCard.id)
+                const result = await removeDataset(datasetCard.id)
+                if (!result.ok) {
+                    showToast(result.error, "error")
+                    return
+                }
+                showToast(`"${dataset.name}" deleted.`, "success")
                 displayDataset(true)
 
             })
@@ -110,7 +115,12 @@ async function displayCategory(toggle){
                 displayCategory(true)
             })
             removeBtn.addEventListener("click", async ()=>{
-                await removeCategory(category.urlSlug)
+                const result = await removeCategory(category.urlSlug)
+                if (!result.ok) {
+                    showToast(result.error, "error")
+                    return
+                }
+                showToast(`"${category.name}" deleted.`, "success")
                 displayCategory(true)
 
             })
@@ -167,7 +177,12 @@ async function displayAuthorizedUsers(toggle){
 
             const removeBtn = userCard.querySelector("#remove-btn")
             removeBtn.addEventListener("click", async ()=>{
-                await removeUser(userCard.name)
+                const result = await removeUser(userCard.name)
+                if (!result.ok) {
+                    showToast(result.error, "error")
+                    return
+                }
+                showToast(`"${userCard.name}" removed.`, "success")
                 displayAuthorizedUsers(true)
 
             })
@@ -266,7 +281,12 @@ function editCategory(originalCategory){
             url: document.querySelector('#url-slug').value,
             icon: document.querySelector('#image-path').value
         }
-        await submitCategoryChange(category, originalCategory.url)
+        const result = await submitCategoryChange(category, originalCategory.url)
+        if (!result.ok) {
+            showToast(result.error, "error")
+            return
+        }
+        showToast(`Category "${category.name}" updated.`, "success")
         toggleOverlay(false)
         displayCategory(true)
     })
@@ -358,9 +378,14 @@ function editDataset(originalDataset){
         format: document.querySelector('#dataset-format').value,
         streamable: document.querySelector('#dataset-streamable').checked,
         access: document.querySelector('#dataset-access').value,
-        tags: tags  
-    } 
-        await submitDatasetChange(dataset, originalDataset.id)
+        tags: tags
+    }
+        const result = await submitDatasetChange(dataset, originalDataset.id)
+        if (!result.ok) {
+            showToast(result.error, "error")
+            return
+        }
+        showToast(`Dataset "${dataset.name}" updated.`, "success")
         toggleOverlay(false)
         displayDataset(true)
     })
@@ -437,9 +462,14 @@ function addDataset(){
         format: document.querySelector('#dataset-format').value,
         streamable: document.querySelector('#dataset-streamable').checked,
         access: document.querySelector('#dataset-access').value,
-        tags: tags  
-    } 
-        await submitDataset(dataset)
+        tags: tags
+    }
+        const result = await submitDataset(dataset)
+        if (!result.ok) {
+            showToast(result.error, "error")
+            return
+        }
+        showToast(`Dataset "${dataset.name}" added.`, "success")
         toggleOverlay(false)
         displayDataset(true)
         displayCategory(false)
@@ -500,8 +530,13 @@ function addCategory(){
         description: document.querySelector('#category-description').value,
         url: document.querySelector('#url-slug').value,
         icon: document.querySelector('#image-path').value
-    } 
-        await submitCategory(category)
+    }
+        const result = await submitCategory(category)
+        if (!result.ok) {
+            showToast(result.error, "error")
+            return
+        }
+        showToast(`Category "${category.name}" added.`, "success")
         toggleOverlay(false)
         displayCategory(true)
 
@@ -541,7 +576,13 @@ function addUser(){
     const closeBtn = document.querySelector(".add-dataset-close-btn")
     const submitButton = document.querySelector(".submit-btn")
     submitButton.addEventListener("click", async () =>{
-        await submitUser(overlay.querySelector('#user-name').value)
+        const name = overlay.querySelector('#user-name').value
+        const result = await submitUser(name)
+        if (!result.ok) {
+            showToast(result.error, "error")
+            return
+        }
+        showToast(`"${name}" added as an authorized user.`, "success")
         toggleOverlay(false)
         displayAuthorizedUsers(true)
     })
@@ -554,72 +595,65 @@ function addUser(){
     toggleOverlay(true)
 }
 
-async function fetchDatasets(){
+/**
+ * Single shared fetch wrapper for every admin mutation/read below — reads
+ * the JSON body either way so a failed request can surface the backend's
+ * specific `detail` message (validation error, duplicate name, etc.)
+ * instead of a generic "something went wrong."
+ * @returns {Promise<{ok: boolean, data: any, error: string|null}>}
+ */
+async function adminRequest(url, options){
     try{
-        const response = await fetch(`${window.ROOT_PATH}/retrieve-datasets`);
-        if (!response.ok){
-            throw new Error(`HTTP error! status ${response.status} `);
+        const response = await fetch(url, options)
+        let data = null
+        try{ data = await response.json() }catch(_){}
+        if(!response.ok){
+            const detail = (data && data.detail) ? data.detail : `Request failed (status ${response.status}).`
+            return { ok: false, data, error: detail }
         }
-        const datasets = await response.json()
-        return datasets
-    }catch (error){
+        return { ok: true, data, error: null }
+    }catch(error){
         console.log(error)
+        return { ok: false, data: null, error: "Couldn't reach the server. Check your connection and try again." }
     }
 }
 
-
+async function fetchDatasets(){
+    const result = await adminRequest(`${window.ROOT_PATH}/retrieve-datasets`)
+    if(!result.ok){
+        showToast(result.error, "error")
+        return []
+    }
+    return result.data
+}
 
 async function fetchCategories(){
-    try{
-        const response = await fetch(`${window.ROOT_PATH}/retrieve-categories`)
-        if(!response.ok){
-            throw new Error(`HTTP error! status ${response.status} `)
-        }
-        const categories = await response.json()
-        return categories
-    }catch(error){
-        console.log(error)
+    const result = await adminRequest(`${window.ROOT_PATH}/retrieve-categories`)
+    if(!result.ok){
+        showToast(result.error, "error")
+        return []
     }
+    return result.data
 }
 
 async function fetchUsers(){
-    try{
-        const response = await fetch(`${window.ROOT_PATH}/admin/retrieve-users`)
-        if(!response.ok){
-            throw new Error(`HTTP error! status ${response.status} `)
-        }
-        const users = await response.json()
-        return users
-    }catch(error){
-        console.log(error)
+    const result = await adminRequest(`${window.ROOT_PATH}/admin/retrieve-users`)
+    if(!result.ok){
+        showToast(result.error, "error")
+        return []
     }
+    return result.data
 }
 
 async function submitUser(user){
-    try{
-        const response = await fetch(`${window.ROOT_PATH}/admin/add-user?user=${user}`, {
-            method: "POST",
-            })
-            if(!response.ok){
-                throw new Error(`HTTP error! status ${response.status} `)
-            }
-
-        }catch(error){
-            console.log(error)
-        }
+    return adminRequest(`${window.ROOT_PATH}/admin/add-user?user=${encodeURIComponent(user)}`, {
+        method: "POST",
+    })
 }
 async function removeUser(user){
-    try{
-        const response = await fetch(`${window.ROOT_PATH}/admin/remove-user?user=${user}`, {
-            method: "POST",
-            })
-            if(!response.ok){
-                throw new Error(`HTTP error! status ${response.status} `)
-            }
-
-        }catch(error){
-            console.log(error)
-        }
+    return adminRequest(`${window.ROOT_PATH}/admin/remove-user?user=${encodeURIComponent(user)}`, {
+        method: "POST",
+    })
 }
 
 document.addEventListener("DOMContentLoaded", (event) => {
@@ -668,100 +702,52 @@ async function populateCategoryDropdown(){
 }
 
 async function submitDataset(dataset){
-    try{
-        const response = await fetch(`${window.ROOT_PATH}/admin/add-dataset`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(dataset),
-        })
-        if(!response.ok){
-            throw new Error(`HTTP error! status ${response.status} `)
-        }
-
-    }catch(error){
-        console.log(error)
-    }
+    return adminRequest(`${window.ROOT_PATH}/admin/add-dataset`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(dataset),
+    })
 }
 
 async function removeDataset(id){
-    try{
-        const response = await fetch(`${window.ROOT_PATH}/admin/remove-dataset?dataset_id=${id}`, {
-            method: "POST",
-        })
-        if(!response.ok){
-            throw new Error(`HTTP error! status ${response.status} `)
-        }
-
-    }catch(error){
-        console.log(error)
-    }
+    return adminRequest(`${window.ROOT_PATH}/admin/remove-dataset?dataset_id=${id}`, {
+        method: "POST",
+    })
 }
 
 async function submitDatasetChange(dataset, id){
-    try{
-        const response = await fetch(`${window.ROOT_PATH}/admin/modify-dataset?dataset_id=${id}`, {
-            method: "POST",
-            headers: {
-                "Content-Type" : "application/json"
-            },
-            body: JSON.stringify(dataset)
-        })
-        if(!response.ok){
-            throw new Error(`HTTP error! status ${response.status} `)
-        }
-
-    }catch(error){
-        console.log(error)
-    }   
+    return adminRequest(`${window.ROOT_PATH}/admin/modify-dataset?dataset_id=${id}`, {
+        method: "POST",
+        headers: {
+            "Content-Type" : "application/json"
+        },
+        body: JSON.stringify(dataset)
+    })
 }
 
 async function submitCategory(category){
-    try{
-    const response = await fetch(`${window.ROOT_PATH}/admin/add-category`, {
+    return adminRequest(`${window.ROOT_PATH}/admin/add-category`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(category),
     })
-    if(!response.ok){
-        throw new Error(`HTTP error! status ${response.status} `)
-        }
-
-    }  catch(error){
-        console.log(error)
-    }
 }
 async function removeCategory(url){
-    try{
-        const response = await fetch(`${window.ROOT_PATH}/admin/remove-category?category_url=${url}`, {
-            method: "POST",
-        })
-        if(!response.ok){
-            throw new Error(`HTTP error! status ${response.status} `)
-        }
-
-    }catch(error){
-        console.log(error)
-    }
+    return adminRequest(`${window.ROOT_PATH}/admin/remove-category?category_url=${encodeURIComponent(url)}`, {
+        method: "POST",
+    })
 }
 
 async function submitCategoryChange(category, url){
-    try{
-        const response = await fetch(`${window.ROOT_PATH}/admin/modify-category?category_url=${url}`, {
-            method: "POST",
-            headers: {
-                "Content-Type" : "application/json"
-            },
-            body: JSON.stringify(category)
-        })
-        if(!response.ok){
-            throw new Error(`HTTP error! status ${response.status} `)
-        }
-
-    }catch(error){
-        console.log(error)
-    }   
+    return adminRequest(`${window.ROOT_PATH}/admin/modify-category?category_url=${encodeURIComponent(url)}`, {
+        method: "POST",
+        headers: {
+            "Content-Type" : "application/json"
+        },
+        body: JSON.stringify(category)
+    })
 }

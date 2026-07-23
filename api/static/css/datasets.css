@@ -95,6 +95,31 @@ clamp(s_1px, calc(b + (m*100)vw), s_2px)
   font-size: 0.9rem;
   padding: 2rem 0;
 }
+.dataset-search-empty-clear {
+  display: block;
+  margin: 10px auto 0;
+  background: none;
+  border: 1px solid #444;
+  color: #cfb991;
+  font-family: Poppins, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.dataset-search-empty-clear:hover {
+  background-color: rgba(207, 185, 145, 0.12);
+  border-color: #cfb991;
+}
+.dataset-category-empty {
+  text-align: center;
+  color: #888;
+  font-family: Poppins, sans-serif;
+  font-size: 0.9rem;
+  padding: 2rem 0;
+}
 /* #endregion */
 
 /* #region Container for dataset cards */
@@ -568,6 +593,14 @@ clamp(s_1px, calc(b + (m*100)vw), s_2px)
 .file-browser-directory-folder:hover {
   background-color: rgba(255, 255, 255, 0.04);
 }
+.file-browser-empty-state {
+  width: 100%;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #999;
+  font-family: Poppins, sans-serif;
+  font-size: 0.85rem;
+}
 .folder-info-stack{
   display: flex;
   flex-direction: column;
@@ -991,6 +1024,14 @@ clamp(s_1px, calc(b + (m*100)vw), s_2px)
 .local-directory-cards:hover{
   background-color: #242424;
 }
+.local-directory-empty-state {
+  width: 100%;
+  padding: 1rem;
+  text-align: center;
+  color: #777;
+  font-family: Poppins, sans-serif;
+  font-size: 0.8rem;
+}
 
 .directory-download-container {
   display: flex;
@@ -1032,6 +1073,53 @@ clamp(s_1px, calc(b + (m*100)vw), s_2px)
 }
 .directory-download-button:hover {
   background-color: #b9a476;
+}
+.directory-download-button.disabled {
+  opacity: 0.6;
+  cursor: default;
+  pointer-events: none;
+}
+
+.directory-download-result {
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #2a2a2a;
+}
+.download-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-family: Poppins, sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+.download-result-success {
+  color: #5fae7d;
+}
+.download-result-success .fa {
+  margin-top: 2px;
+}
+.download-result-error {
+  color: #e24b4a;
+}
+.download-result-error .fa {
+  margin-top: 2px;
+}
+.download-result-ood-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  color: #cfb991;
+  font-family: Poppins, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.download-result-ood-link:hover {
+  color: #b9a476;
 }
 
 /* #endregion */

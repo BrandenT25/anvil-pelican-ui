@@ -9,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
+    <script src="{{ROOT_URL}}/api/static/js/toast.js"></script>
     <script src="{{ROOT_URL}}/api/static/js/datasets.js" defer></script>
     <script>window.CATEGORY = "{{CATEGORY}}"</script>
 
@@ -17,8 +18,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ROOT_URL}}/api/static/css/navbar.css">
+    <link rel="stylesheet" href="{{ROOT_URL}}/api/static/css/toast.css">
     <link rel="stylesheet" href="{{ROOT_URL}}/api/static/css/datasets.css">
-    
+
   </head>
   <body>
     <div class="page-wrapper">
@@ -33,7 +35,11 @@
         <span class="dataset-search-status-text"></span>
         <button class="dataset-search-clear">Clear search</button>
       </div>
-      <div class="dataset-search-empty" style="display:none;">No datasets match your search.</div>
+      <div class="dataset-search-empty" style="display:none;">
+        <span class="dataset-search-empty-text">No datasets match your search.</span>
+        <button class="dataset-search-empty-clear" style="display:none;">Clear search</button>
+      </div>
+      <div class="dataset-category-empty" style="display:none;">This category doesn't have any datasets yet.</div>
     </div>
 </div>
   </body>

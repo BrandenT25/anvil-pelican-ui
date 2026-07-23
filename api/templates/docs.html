@@ -137,7 +137,7 @@ class OSDFDataset(Dataset):
         <p>Once you've selected files or folders in the file browser, hit Select Folder to choose a destination on Anvil (Home, Project, or Scratch). pelican-ui browses your actual Anvil directories, so you can navigate to wherever you want the files to land and then hit Download.</p>
         <div class="docs-callout docs-callout-warn">
           <span class="docs-callout-label">Warn</span>
-          <div class="docs-callout-body">Downloads run in the background and don't block the page, but pelican-ui also doesn't currently show live progress or a completion notification. Give it a minute for large files or many selections, and check the destination folder directly to confirm everything landed before assuming it's done.</div>
+          <div class="docs-callout-body">Downloads run one file at a time in the background and don't block the page. pelican-ui doesn't show live per-file progress, but once everything has been attempted you'll get a summary in the download panel (and a toast) showing how many succeeded or failed, plus a link to open the destination folder in OOD's file browser. Give it a minute for large files or many selections before that summary appears.</div>
         </div>
 
         <h3 id="troubleshooting">Troubleshooting</h3>

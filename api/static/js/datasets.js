@@ -124,6 +124,7 @@ const snippetDescriptions = {
  * @returns {Promise<void}
  */
 async function fetchDatasets() {
+  const categoryEmptyBox = document.querySelector(".dataset-category-empty");
   try {
     const datasetResponse = await fetch(
       `${window.ROOT_PATH}/retrieve-datasets`,
@@ -132,16 +133,29 @@ async function fetchDatasets() {
       throw new Error(`HTTP error! status ${datasetResponse.status} `);
     }
     const datasets = await datasetResponse.json();
+    let visibleCount = 0;
     datasets.forEach((dataset) => {
       // no CATEGORY set (the /datasets/search landing) => render every
       // dataset, so the shared search filter below decides what shows
       if (!window.CATEGORY || dataset["tags"].some((tag) => tag == window.CATEGORY)) {
         addDatasetCard(dataset);
+        visibleCount += 1;
       }
     });
     initDatasetSearch();
+    // only the plain "this category has nothing in it" case, not a search
+    // with 0 matches — that's handled by applyDatasetFilter's own empty box
+    const searchParam = new URLSearchParams(window.location.search).get("search");
+    if (visibleCount === 0 && !searchParam && categoryEmptyBox) {
+      categoryEmptyBox.style.display = "block";
+    }
   } catch (error) {
     console.log("fetch operation failed", error);
+    showToast("Something went wrong loading these datasets. Try again.", "error");
+    if (categoryEmptyBox) {
+      categoryEmptyBox.textContent = "Something went wrong loading datasets.";
+      categoryEmptyBox.style.display = "block";
+    }
   }
 }
 
@@ -161,7 +175,10 @@ function applyDatasetFilter(query) {
     }
   });
   const emptyBox = document.querySelector(".dataset-search-empty");
+  const emptyBoxClear = emptyBox.querySelector(".dataset-search-empty-clear");
   emptyBox.style.display = visibleCount === 0 ? "block" : "none";
+  // only worth offering "clear search" when there was actually a query to clear
+  emptyBoxClear.style.display = visibleCount === 0 && cleanedQuery ? "block" : "none";
 }
 
 /**
@@ -174,6 +191,7 @@ function initDatasetSearch() {
   const status = document.querySelector(".dataset-search-status");
   const statusText = document.querySelector(".dataset-search-status-text");
   const clearButton = document.querySelector(".dataset-search-clear");
+  const emptyBoxClear = document.querySelector(".dataset-search-empty-clear");
   const searchParam = new URLSearchParams(window.location.search).get("search");
 
   if (searchParam) {
@@ -188,14 +206,17 @@ function initDatasetSearch() {
     applyDatasetFilter(input.value);
   });
 
-  clearButton.addEventListener("click", () => {
+  function clearSearch() {
     input.value = "";
     status.style.display = "none";
     applyDatasetFilter("");
     const url = new URL(window.location);
     url.searchParams.delete("search");
     window.history.replaceState({}, "", url);
-  });
+  }
+
+  clearButton.addEventListener("click", clearSearch);
+  emptyBoxClear.addEventListener("click", clearSearch);
 }
 
 /**
@@ -405,7 +426,17 @@ function loadDirectory(path, container, breadcrumbs, download_card) {
 
 async function makeFolderCards(path, container, download_card, breadcrumbs) {
   const paths = await retrieveDirectoryPaths(path);
-  
+
+  if (paths === null) {
+    showToast("Couldn't load this folder. Try again.", "error");
+    container.innerHTML = /* html */ `<div class="file-browser-empty-state">Something went wrong loading this folder. Try again.</div>`;
+    return;
+  }
+  if (paths.length === 0) {
+    container.innerHTML = /* html */ `<div class="file-browser-empty-state">This folder is empty.</div>`;
+    return;
+  }
+
   paths.forEach((folder_path) => {
     const cleanedPath = folder_path.name.replace(/\/$/, "");
     const name = cleanedPath.split("/").pop();
@@ -519,6 +550,7 @@ async function retrieveDirectoryPaths(path) {
     return paths;
   } catch (error) {
     console.log("error with", error);
+    return null;
   }
 }
 
@@ -686,6 +718,7 @@ function download_file(container, download_paths) {
                     </div>
                     <div class="directory-download-button"><span>Download</span></div>
                 </div>
+                <div class="directory-download-result" style="display:none;"></div>
             </div>
         `;
 
@@ -694,6 +727,9 @@ function download_file(container, download_paths) {
     );
     const download_card = staticMediumWrapper.querySelector(
       ".directory-download-container",
+    );
+    const downloadResult = staticMediumWrapper.querySelector(
+      ".directory-download-result",
     );
     const downloadButton = download_card.querySelector(
       ".directory-download-button",
@@ -796,9 +832,25 @@ function download_file(container, download_paths) {
     closeBtn.addEventListener("click", () =>
       closeSelector(fileSelectorOverlay),
     );
-    downloadButton.addEventListener("click", () => {
-      downloadFromPath(mediumDirectory.downloadPath, download_paths);
-      closeSelector(fileSelectorOverlay);
+    downloadButton.addEventListener("click", async () => {
+      if (!mediumDirectory.downloadPath) {
+        showToast("Choose a destination folder first.", "error");
+        return;
+      }
+      if (download_paths.size === 0) {
+        showToast("Select at least one file or folder first.", "error");
+        return;
+      }
+      downloadButton.classList.add("disabled");
+      downloadButton.querySelector("span").textContent = "Downloading...";
+      downloadResult.style.display = "none";
+      downloadResult.innerHTML = "";
+
+      const result = await downloadFromPath(mediumDirectory.downloadPath, download_paths);
+
+      downloadButton.classList.remove("disabled");
+      downloadButton.querySelector("span").textContent = "Download";
+      renderDownloadResult(downloadResult, result);
     });
     fileSelectorOverlay.appendChild(fileSelector);
     fileSelectorOverlay.classList.add("show");
@@ -822,6 +874,15 @@ async function makeLocalDirectoryCards(root, path = "", browseLocalDirectoryCont
   mediumLabel.textContent = displayText;
   downloadLocationLabel.textContent = `Downloading in Folder: ${downloadLocation}`;
   const folders = await fetchLocalDirectory(path);
+
+  if (folders === null) {
+    browseLocalDirectoryContainer.innerHTML = /* html */ `<div class="local-directory-empty-state">Couldn't load this folder.</div>`;
+    return;
+  }
+  if (folders.length === 0) {
+    browseLocalDirectoryContainer.innerHTML = /* html */ `<div class="local-directory-empty-state">No subfolders here.</div>`;
+    return;
+  }
 
   folders.forEach((folder) => {
     const isEntryObject = typeof folder === "object" && folder !== null;
@@ -863,12 +924,21 @@ async function fetchLocalDirectory(path) {
       `${window.ROOT_PATH}/datasets/local-browse/list-root?medium=${path}`,
     );
     if (!response.ok) {
-      throw new Error(`HTTP ERROR | STATUS CODE ${response.status}`);
+      // backend already sends a specific reason (permission denied, folder
+      // not found, unknown allocation) — surface that instead of a generic one
+      let detail = `HTTP error! status ${response.status}`;
+      try {
+        const body = await response.json();
+        if (body && body.detail) detail = body.detail;
+      } catch (_) {}
+      throw new Error(detail);
     }
-    paths = await response.json();
+    const paths = await response.json();
     return paths;
   } catch (error) {
     console.log(error);
+    showToast(error.message || "Couldn't load that folder. Try again.", "error");
+    return null;
   }
 }
 
@@ -950,23 +1020,90 @@ function main() {
   });
 }
 
+/**
+ * Downloads every selected path into the destination folder, one request at
+ * a time, actually waiting on each so success/failure is known before the
+ * caller reports back to the user (previously these fetches were fired
+ * without awaiting, so the UI had no way to tell if anything worked).
+ * @param {string} file - medium + subfolder path, e.g. "project/x-abc/data"
+ * @param {Map<string,string>} paths - path -> type, from container.downloadPaths
+ * @returns {Promise<{succeeded: string[], failed: string[], destination: string, oodUrl: string}>}
+ */
 async function downloadFromPath(file, paths) {
   const parts = file.split("/");
   const root = parts[0];
   const resolved_root = rootPaths[root];
   parts[0] = resolved_root;
   const fullPath = parts.join("/");
-  console.log(paths);
-  paths.forEach((type, path) => {
+
+  const succeeded = [];
+  const failed = [];
+  for (const [path] of paths) {
     try {
-      fetch(
+      const response = await fetch(
         `${window.ROOT_PATH}/datasets/download?storageLocation=${fullPath}&filepath=${path}`,
       );
-      console.log(`downloaded ${path} at ${file}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status ${response.status}`);
+      }
+      succeeded.push(path);
     } catch (error) {
-      console.log(error);
+      console.log("download failed for", path, error);
+      failed.push(path);
     }
-  });
+  }
+
+  // OOD's file browser is served from the same origin pelican-ui runs
+  // under (per the OOD sandbox app pattern), so window.location.origin
+  // gives the right base without hardcoding the cluster's OOD hostname
+  const oodUrl = `${window.location.origin}/pun/sys/dashboard/files/fs${fullPath.split("/").map(encodeURIComponent).join("/")}`;
+
+  return { succeeded, failed, destination: fullPath, oodUrl };
+}
+
+/**
+ * Renders the outcome of downloadFromPath into the download modal and
+ * raises a toast — success gets a link to open the destination in OOD's
+ * file browser, failures get a specific-as-possible message.
+ * @param {HTMLElement} container
+ * @param {{succeeded: string[], failed: string[], destination: string, oodUrl: string}} result
+ */
+function renderDownloadResult(container, result) {
+  container.style.display = "flex";
+  const total = result.succeeded.length + result.failed.length;
+  const ood = /* html */ `
+    <a class="download-result-ood-link" href="${result.oodUrl}" target="_blank" rel="noopener noreferrer">
+      <i class="fa fa-external-link"></i> Open in File Browser
+    </a>
+  `;
+
+  if (result.failed.length === 0) {
+    container.innerHTML = /* html */ `
+      <div class="download-result download-result-success">
+        <i class="fa fa-check-circle"></i>
+        <span>Downloaded ${result.succeeded.length} item${result.succeeded.length === 1 ? "" : "s"} to ${result.destination}.</span>
+      </div>
+      ${ood}
+    `;
+    showToast(`Download complete — ${result.succeeded.length} item${result.succeeded.length === 1 ? "" : "s"} saved.`, "success");
+  } else if (result.succeeded.length === 0) {
+    container.innerHTML = /* html */ `
+      <div class="download-result download-result-error">
+        <i class="fa fa-exclamation-circle"></i>
+        <span>All ${result.failed.length} item${result.failed.length === 1 ? "" : "s"} failed to download. Check permissions on the destination and try again.</span>
+      </div>
+    `;
+    showToast("Download failed. Check permissions on the destination and try again.", "error");
+  } else {
+    container.innerHTML = /* html */ `
+      <div class="download-result download-result-error">
+        <i class="fa fa-exclamation-circle"></i>
+        <span>${result.succeeded.length} of ${total} items downloaded — ${result.failed.length} failed.</span>
+      </div>
+      ${ood}
+    `;
+    showToast(`${result.failed.length} of ${total} items failed to download.`, "error");
+  }
 }
 
 /**
