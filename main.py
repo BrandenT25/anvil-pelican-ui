@@ -7,6 +7,7 @@ from api.routes.dataset import datasetRouter
 from api.routes.pelican import pelicanRouter
 from api.routes.local import localRouter
 from api.routes.database import dbRouter
+from api.routes.downloads import downloadsRouter
 
 from api.auth import is_authorized
 
@@ -18,6 +19,7 @@ app.include_router(datasetRouter)
 app.include_router(pelicanRouter)
 app.include_router(localRouter)
 app.include_router(dbRouter)
+app.include_router(downloadsRouter)
 
 app.mount("/api/static", StaticFiles(directory="api/static"), name="static")
 templates = Jinja2Templates(directory="api/templates")
@@ -57,4 +59,8 @@ async def category_page(category, request: Request):
 async def admin_page(request: Request):
     if not is_authorized(USER):
         raise HTTPException(status_code=403, detail="Not Authorized")
-    return templates.TemplateResponse(request, "admin.html", {"ROOT_URL": request.scope.get('root_path', ''),  "USER": USER}) 
+    return templates.TemplateResponse(request, "admin.html", {"ROOT_URL": request.scope.get('root_path', ''),  "USER": USER})
+
+@app.get('/downloads', response_class=HTMLResponse)
+async def downloads_page(request: Request):
+    return templates.TemplateResponse(request, "downloads.html", {"ROOT_URL": request.scope.get('root_path', '')})

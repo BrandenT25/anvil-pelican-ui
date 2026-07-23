@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Download History | Pelican Dataset Portal</title>
+    <script>window.ROOT_PATH = "{{ROOT_URL}}" </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="{{ROOT_URL}}/api/static/js/toast.js"></script>
+    <script src="{{ROOT_URL}}/api/static/js/downloads.js" defer></script>
+    <link rel="stylesheet" href="{{ROOT_URL}}/api/static/css/navbar.css">
+    <link rel="stylesheet" href="{{ROOT_URL}}/api/static/css/toast.css">
+    <link rel="stylesheet" href="{{ROOT_URL}}/api/static/css/downloads.css">
+  </head>
+  <body>
+    {% include "partials/navbar.html" %}
+    <div class="downloads-page">
+      <div class="downloads-page-header">
+        <div class="downloads-page-title-box">
+          <span class="downloads-page-title">Download History</span>
+          <span class="downloads-page-subtitle">Everything downloaded through pelican-ui on this deployment, most recent first.</span>
+        </div>
+        <button class="downloads-refresh-button"><i class="fa fa-refresh"></i> Refresh</button>
+      </div>
+      <div class="downloads-list"></div>
+      <div class="downloads-empty-state" style="display:none;">
+        <i class="fa fa-download downloads-empty-state-icon"></i>
+        <p class="downloads-empty-state-text"></p>
+      </div>
+    </div>
+  </body>
+</html>

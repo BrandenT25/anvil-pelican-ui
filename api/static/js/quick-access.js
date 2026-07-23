@@ -307,7 +307,7 @@ function buildBrowser(path){
     })
     download_button.addEventListener("click", (event) => {
       console.log(file_container.downloadPaths);
-      download_file(file_container, file_container.downloadPaths);
+      download_file(file_container, file_container.downloadPaths, displayName);
     });
 }
 
@@ -432,7 +432,7 @@ async function makeFolderCards(path, container, download_card, breadcrumbs){
   })
 }
 
-function download_file(container, download_paths) {
+function download_file(container, download_paths, sourceName) {
   try {
     let selectedMedium = "";
     function closeSelector(fileSelectorOverlay) {
@@ -617,7 +617,7 @@ function download_file(container, download_paths) {
       downloadResult.style.display = "none";
       downloadResult.innerHTML = "";
 
-      const result = await downloadFromPath(mediumDirectory.downloadPath, download_paths);
+      const result = await downloadFromPath(mediumDirectory.downloadPath, download_paths, sourceName);
 
       downloadButton.classList.remove("disabled");
       downloadButton.querySelector("span").textContent = "Download";
@@ -729,20 +729,63 @@ async function makeLocalDirectoryCards(root, path = "", browseLocalDirectoryCont
 }
 
 /**
+ * Writes a local downloads-history row when a download starts. Best-effort:
+ * a history-write failure must never block or corrupt the actual download,
+ * so failures here are swallowed and just return null (recordDownloadFinish
+ * no-ops on a null id).
+ * @returns {Promise<number|null>}
+ */
+async function recordDownloadStart(name, destination, itemCount) {
+  try {
+    const response = await fetch(`${window.ROOT_PATH}/downloads/history/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, destination, item_count: itemCount }),
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.id;
+  } catch (error) {
+    console.log("recording download start failed", error);
+    return null;
+  }
+}
+
+/** Updates the downloads-history row written by recordDownloadStart. Best-effort, same as above. */
+async function recordDownloadFinish(recordId, status, errorMessage) {
+  if (recordId === null || recordId === undefined) return;
+  try {
+    await fetch(`${window.ROOT_PATH}/downloads/history/${recordId}/finish`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status, error_message: errorMessage }),
+    });
+  } catch (error) {
+    console.log("recording download finish failed", error);
+  }
+}
+
+/**
  * Downloads every selected path into the destination folder, one request at
  * a time, actually waiting on each so success/failure is known before the
  * caller reports back to the user (previously these fetches were fired
- * without awaiting, so the UI had no way to tell if anything worked).
+ * without awaiting, so the UI had no way to tell if anything worked). Also
+ * records the attempt in the local downloads-history DB, reusing this same
+ * succeeded/failed tracking as the completion signal rather than adding a
+ * second, parallel one.
  * @param {string} file - medium + subfolder path, e.g. "project/x-abc/data"
  * @param {Map<string,string>} paths - path -> type, from container.downloadPaths
+ * @param {string} [sourceName] - human-readable name of what's being downloaded
  * @returns {Promise<{succeeded: string[], failed: string[], destination: string, oodUrl: string}>}
  */
-async function downloadFromPath(file, paths) {
+async function downloadFromPath(file, paths, sourceName) {
   const parts = file.split("/");
   const root = parts[0];
   const resolved_root = rootPaths[root];
   parts[0] = resolved_root;
   const fullPath = parts.join("/");
+
+  const historyId = await recordDownloadStart(sourceName || fullPath, fullPath, paths.size);
 
   const succeeded = [];
   const failed = [];
@@ -760,6 +803,10 @@ async function downloadFromPath(file, paths) {
       failed.push(path);
     }
   }
+
+  const historyStatus = failed.length === 0 ? "complete" : succeeded.length === 0 ? "failed" : "partial";
+  const historyError = failed.length === 0 ? null : `${failed.length} of ${succeeded.length + failed.length} item(s) failed to download.`;
+  await recordDownloadFinish(historyId, historyStatus, historyError);
 
   // OOD's file browser is served from the same origin pelican-ui runs
   // under (per the OOD sandbox app pattern), so window.location.origin

@@ -27,9 +27,11 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    gap: clamp(12px, -4px + 1.25vw, 22px);
     padding: 0 clamp(12px, -8px + 1.5625vw, 24px);
     background-color: #cfb991;
     border-radius: 10px 0 0 10px;
+    min-width: 0;
 }
 .navbar-logo {
     flex-shrink: 0;
@@ -69,9 +71,32 @@
     color: #cfb991;
     border-bottom-color: #cfb991;
 }
+.navbar-downloads-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    /* padding pads the tap target without growing the icon itself —
+       an icon-only link this small needs a bigger hit area than its
+       visible glyph, especially on touch */
+    padding: 8px;
+    margin: -8px;
+    color: #1a1a1a;
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
+}
+.navbar-downloads-link:hover {
+    opacity: 1;
+}
+.navbar-downloads-icon {
+    display: block;
+    width: clamp(16px, 6.6px + 0.833vw, 24px);
+    height: clamp(16px, 6.6px + 0.833vw, 24px);
+}
 .navbar-purdue-logo {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
 }
 .navbar-purdue-logo img {
     display: block;
@@ -81,6 +106,7 @@
 @media (max-width: 700px) {
     .home-navbar-right {
         flex: 0 0 auto;
+        gap: 10px;
     }
     .navbar-link {
         white-space: normal;
@@ -103,6 +129,14 @@
     }
     .navbar-logo img {
         width: 40px;
+    }
+    .home-navbar-right {
+        gap: 8px;
+        padding: 0 10px;
+    }
+    .navbar-downloads-icon {
+        width: 16px;
+        height: 16px;
     }
     .navbar-purdue-logo img {
         height: 26px;
